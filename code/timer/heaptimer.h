@@ -1,10 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-17
- * @copyleft Apache 2.0
- */ 
-#ifndef HEAP_TIMER_H
-#define HEAP_TIMER_H
+#pragma once
 
 #include <queue>
 #include <unordered_map>
@@ -25,42 +19,31 @@ struct TimerNode {
     int id;
     TimeStamp expires;
     TimeoutCallBack cb;
-    bool operator<(const TimerNode& t) {
-        return expires < t.expires;
+    bool operator<(const TimerNode& t){
+        return expires<t.expires;
+    }
+    bool operator>(const TimerNode& t){
+        return expires>t.expires;
     }
 };
 class HeapTimer {
 public:
-    HeapTimer() { heap_.reserve(64); }
-
-    ~HeapTimer() { clear(); }
-    
+    HeapTimer();
+    ~HeapTimer();
     void adjust(int id, int newExpires);
-
     void add(int id, int timeOut, const TimeoutCallBack& cb);
-
     void doWork(int id);
-
     void clear();
-
     void tick();
-
     void pop();
-
     int GetNextTick();
-
 private:
     void del_(size_t i);
-    
     void siftup_(size_t i);
-
     bool siftdown_(size_t index, size_t n);
-
     void SwapNode_(size_t i, size_t j);
 
     std::vector<TimerNode> heap_;
-
+    // id对应的在heap_中的下标，方便用heap_的时候查找
     std::unordered_map<int, size_t> ref_;
 };
-
-#endif //HEAP_TIMER_H

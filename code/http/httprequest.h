@@ -1,11 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-25
- * @copyleft Apache 2.0
- */ 
-#ifndef HTTP_REQUEST_H
-#define HTTP_REQUEST_H
-
+#pragma once
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -38,26 +31,18 @@ public:
         CLOSED_CONNECTION,
     };
     
-    HttpRequest() { Init(); }
+    HttpRequest();
     ~HttpRequest() = default;
 
     void Init();
     bool parse(Buffer& buff);
-
     std::string path() const;
     std::string& path();
     std::string method() const;
     std::string version() const;
     std::string GetPost(const std::string& key) const;
     std::string GetPost(const char* key) const;
-
     bool IsKeepAlive() const;
-
-    /* 
-    todo 
-    void HttpConn::ParseFormData() {}
-    void HttpConn::ParseJson() {}
-    */
 
 private:
     bool ParseRequestLine_(const std::string& line);
@@ -79,6 +64,3 @@ private:
     static const std::unordered_map<std::string, int> DEFAULT_HTML_TAG;
     static int ConverHex(char ch);
 };
-
-
-#endif //HTTP_REQUEST_H
