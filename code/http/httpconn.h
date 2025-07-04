@@ -43,13 +43,9 @@ public:
     
     bool process();
 
-    int ToWriteBytes() { 
-        return iov_[0].iov_len + iov_[1].iov_len; 
-    }
+    int ToWriteBytes();
 
-    bool IsKeepAlive() const {
-        return request_.IsKeepAlive();
-    }
+    bool IsKeepAlive() const;
 
     static bool isET;
     static const char* srcDir;

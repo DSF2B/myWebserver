@@ -18,7 +18,7 @@
 class HttpResponse {
 public:
     HttpResponse();
-    ~HttpResponse();
+    ~HttpResponse(); 
 
     void Init(const std::string& srcDir, std::string& path, bool isKeepAlive = false, int code = -1);
     void MakeResponse(Buffer& buff);
@@ -26,7 +26,7 @@ public:
     char* File();
     size_t FileLen() const;
     void ErrorContent(Buffer& buff, std::string message);
-    int Code() const { return code_; }
+    int Code() const;
 
 private:
     void AddStateLine_(Buffer &buff);
