@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "string": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp"
     }
 }

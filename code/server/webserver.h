@@ -1,10 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-17
- * @copyleft Apache 2.0
- */ 
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
+#pragma once
 
 #include <unordered_map>
 #include <fcntl.h>       // fcntl()
@@ -51,10 +45,10 @@ private:
     void OnWrite_(HttpConn* client);
     void OnProcess(HttpConn* client);
 
-    static const int MAX_FD = 65536;
-
     static int SetFdNonblock(int fd);
 
+    static const int MAX_FD = 65536;
+    
     int port_;
     bool openLinger_;
     int timeoutMS_;  /* 毫秒MS */
@@ -70,6 +64,3 @@ private:
     std::unique_ptr<Epoller> epoller_;
     std::unordered_map<int, HttpConn> users_;
 };
-
-
-#endif //WEBSERVER_H
