@@ -17,7 +17,7 @@ typedef union epoll_data {
 */
 
 
-Epoller::Epoller(int maxEvent = 1024):epollFd_(epoll_create(512)),events_(maxEvent){
+Epoller::Epoller(int maxEvent):epollFd_(epoll_create(512)),events_(maxEvent){
     assert(epollFd_>=0 && events_.size()>0);
 }
 
@@ -46,7 +46,7 @@ bool Epoller::DelFd(int fd){
     return 0==epoll_ctl(epollFd_,EPOLL_CTL_DEL,fd,0);
 }
 
-int Epoller::Wait(int timeoutMs = -1){
+int Epoller::Wait(int timeoutMs){
     return epoll_wait(epollFd_, &events_[0],static_cast<int>(events_.size()),timeoutMs);
 }
 

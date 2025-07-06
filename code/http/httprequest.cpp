@@ -186,30 +186,31 @@ void HttpRequest::ParseBody_(const std::string& line){
     LOG_DEBUG("Body:%s,len:%d",line.c_str(),line.size());
 }
 bool HttpRequest::parse(Buffer& buff){
-    const char CRLF="\r\n";
+    const char CRLF[]="\r\n";
     if(buff.WritableBytes() <=0){
         return false;
     } 
 
     while(buff.ReadableBytes() && state_!=FINISH){
         const char* lineEnd=std::search(buff.Peek(),buff.BeginWriteConst(),CRLF,CRLF+2);
+        std::string line(buff.Peek(), lineEnd);
         switch(state_){
             case REQUEST_LINE:{
-                if(!ParseRequestLine_()){
+                if(!ParseRequestLine_(line)){
                     return false;
                 }
                 ParsePath_();
                 break;
             }
             case HEADERS:{
-                ParseHeader_();
+                ParseHeader_(line);
                 if(buff.ReadableBytes() <=2){
                     state_=FINISH;
                 }
                 break;
             }
             case BODY:{
-                ParseBody_();
+                ParseBody_(line);
                 break;
             }
             default:{
@@ -247,7 +248,7 @@ bool HttpRequest::UserVerify(const std::string& name, const std::string& pwd, bo
     res=mysql_store_result(sql);
     while(MYSQL_ROW row=mysql_fetch_row(res)){
         LOG_DEBUG("MYSQL ROW:%s %s",row[0],row[1]);
-        string password(row[1]);
+        std::string password(row[1]);
         if(isLogin){
             if(pwd==password){
                 login_succ=true;

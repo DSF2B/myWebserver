@@ -56,7 +56,7 @@ ssize_t HttpConn::write(int* saveErrno){
         }
         if(iov_[0].iov_len + iov_[1].iov_len == 0){
             break;
-        }else if(std::static_cast<size_t>(len) > iov_[0].iov_len){
+        }else if(static_cast<size_t>(len) > iov_[0].iov_len){
             //写入长度超过第一个缓冲区
             iov_[1].iov_base=(uint8_t*)iov_[1].iov_base + (len-iov_[0].iov_len);
             iov_[1].iov_len -= (len - iov_[0].iov_len);
@@ -88,7 +88,7 @@ bool HttpConn::process(){
     }
 
     response_.MakeResponse(writeBuff_);
-    iov_[0].iov_base=std::const_cast<char*>(writeBuff_.Peek());
+    iov_[0].iov_base=const_cast<char*>(writeBuff_.Peek());
     iov_[0].iov_len=writeBuff_.ReadableBytes();
     iovCnt_=1;
 
