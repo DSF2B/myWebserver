@@ -48,6 +48,24 @@
     ?<!:负向后顾  分组内容取反:(?<!\$)\b\d+\b:匹配非$后面的数字
 */
 
+
+/*
+GET / HTTP/1.1
+Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
+Connection: keep-alive
+Host: www.baidu.com
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36 Edg/101.0.1210.32
+sec-ch-ua: " Not A;Brand";v=“99”, “Chromium”;v=“101”, “Microsoft Edge”;v=“101”
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: “Windows”
+*/
 HttpRequest::HttpRequest(){
     Init();
 }
@@ -95,45 +113,189 @@ void HttpRequest::ParsePath_(){
 }
 // 处理post请求
 void HttpRequest::ParsePost_(){
-
-}
-// 从url中解析编码
-void HttpRequest::ParseFromUrlencoded_(){
-    //username=john%20doe&password=123
-
-
-}
-
-bool HttpRequest::ParseRequestLine_(const std::string& line){
-
-}
-void HttpRequest::ParseHeader_(const std::string& line){
-
-}
-void HttpRequest::ParseBody_(const std::string& line){
-    if(method_ == "POST" && header_["Content-Type"] == "application/x-www-form-urlencoded"){
-        ParseFromUrlencoded_();     // 解析POST请求体中的url
-        auto it=DEFAULT_HTML_TAG.find(path_);
+    if(method_ == "POST" && header_["Connect-Type"] == "application/x-www-form-urlencoded"){
+        ParseFromUrlencoded_();
+        auto it = DEFAULT_HTML_TAG.find(path_);
         if(it!=DEFAULT_HTML_TAG.end()){
             int tag=it->second;
             LOG_DEBUG("Tag:%d",tag);
-            if(tag==0||tag==1){
+            if(tag == 0 || tag == 1){
+                //注册或登陆
                 bool isLogin=(tag==1);
                 if(UserVerify(post_["username"],post_["password"],isLogin)){
-                    path_="/welcome.html";
+                    path_="welcome.html";
                 }else{
                     path_="error.html";
                 }
             }
         }
-
     }
 }
+// 从url中解析编码
+void HttpRequest::ParseFromUrlencoded_(){
+    //username=john%20doe&password=123
+    //key=value&key=value
+    //有特殊符号，将特殊符号转换为ASCII HEX值
+    if(body_.size() == 0)return ;
+    std::string key,value;
+    int num=0;
+    int n=body_.size();
+    int i=0,j=0;
+    for(;i<n;i++){
+        char ch =body_[i];
+        switch(ch){
+            case '=':{
+                key=body_.substr(j,i-j);
+                j=i+1;
+                break;
+            }
+            case '+':{
+                body_[i]=' ';
+                break;
+            }
+            case '%':{
+                num=ConverHex(body_[i+1])*16 + ConverHex(body_[i+2]);
+                body_[i+1]=num/10+'0';
+                body_[i+2]=num%10+'0';
+                break;
+            }
+            case '&':{
+                value = body_.substr(j,i-j);
+                j=i+1;
+                post_[key]=value;
+                LOG_DEBUG("%s = %s",key.c_str(),value.c_str());
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    assert(j<=i);
+    if(post_.count(key) == 0 && j<i){
+        //还没有存储value
+        value=body_.substr(j,i-j);
+        post_[key]=value;
+    }
+}
+
+bool HttpRequest::ParseRequestLine_(const std::string& line){
+    std::regex pattern("^([^ ]+) ([^ ]+) HTTP/([^ ]+)$");
+    std::smatch subMatch;
+    if(std::regex_match(line,subMatch,pattern)){
+        method_=subMatch[0];
+        path_=subMatch[1];
+        version_=subMatch[2];
+        state_=HEADERS;
+        return true;
+    }
+    LOG_ERROR("Request line parse error");
+    return false;
+}
+void HttpRequest::ParseHeader_(const std::string& line){
+    std::regex pattern("^([^:]): ?(.*)$");
+    std::smatch subMatch;
+    if(std::regex_match(line,subMatch,pattern)){
+        header_[subMatch[0]]=subMatch[1];
+    }else{
+        state_=BODY;
+    }
+}
+void HttpRequest::ParseBody_(const std::string& line){
+    body_=line;
+    ParsePost_();
+    state_=FINISH;
+    LOG_DEBUG("Body:%s,len:%d",line.c_str(),line.size());
+}
 bool HttpRequest::parse(Buffer& buff){
+    const char CRLF[]="\r\n";
+    if(buff.WritableBytes() <=0){
+        return false;
+    } 
+
+    while(buff.ReadableBytes() && state_!=FINISH){
+        const char* lineEnd=std::search(buff.Peek(),buff.BeginWriteConst(),CRLF,CRLF+2);
+        std::string line(buff.Peek(), lineEnd);
+        switch(state_){
+            case REQUEST_LINE:{
+                if(!ParseRequestLine_(line)){
+                    return false;
+                }
+                ParsePath_();
+                break;
+            }
+            case HEADERS:{
+                ParseHeader_(line);
+                if(buff.ReadableBytes() <=2){
+                    state_=FINISH;
+                }
+                break;
+            }
+            case BODY:{
+                ParseBody_(line);
+                break;
+            }
+            default:{
+                break;
+            }
+        }
+        if(lineEnd == buff.BeginWrite())break;//读到了写区，已经读完
+        buff.RetrieveUntil(lineEnd+2);//下一行
+    }
+    LOG_DEBUG("[%s], [%s], [%s]",method_.c_str(),path_.c_str(),version_.c_str());
+    return true;
 
 }
 bool HttpRequest::UserVerify(const std::string& name, const std::string& pwd, bool isLogin){
+    if(name == ""||pwd=="")return false;
+    LOG_INFO("Verify name:%s,pwd:%s",name,pwd);
+    MYSQL *sql;
+    SqlConnRAII(&sql,SqlConnPool::Instance());
+    assert(sql);
 
+    bool login_succ=false;
+    bool register_succ=false;
+    bool user_exist=false;
+
+    char order[256]={0};
+    MYSQL_RES* res;
+    MYSQL_FIELD* fields;
+
+    snprintf(order,256,"SELECT username, password FROM user WHERE username='%s' LIMIT 1",name.c_str());
+    LOG_DEBUG("%s", order);
+    if(mysql_query(sql,order)){
+        mysql_free_result(res);
+        return false;
+    }
+    res=mysql_store_result(sql);
+    while(MYSQL_ROW row=mysql_fetch_row(res)){
+        LOG_DEBUG("MYSQL ROW:%s %s",row[0],row[1]);
+        std::string password(row[1]);
+        if(isLogin){
+            if(pwd==password){
+                login_succ=true;
+            }else{
+                login_succ=false;
+                LOG_DEBUG("pwd error!");
+            }
+        }else{
+            user_exist=true;
+            LOG_DEBUG("user used!");
+        }
+    }
+    if(!isLogin && !user_exist){
+        LOG_DEBUG("regirster!");
+        bzero(order, 256);
+        snprintf(order,256,"INSERT INTO user(username,password) VALUES('%s','%s')",name.c_str(),pwd.c_str());
+        LOG_DEBUG( "%s", order);
+        if(mysql_query(sql,order)){
+            mysql_free_result(res);
+            //mysql_close
+            return false;
+        }
+        register_succ=true;
+    }
+    LOG_DEBUG( "UserVerify success!!");
+    return isLogin?login_succ:register_succ;
 }
 int HttpRequest::ConverHex(char ch){
     if(ch >= 'A' && ch<='F')return ch-'A'+10;

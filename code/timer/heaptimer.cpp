@@ -23,7 +23,6 @@ void HeapTimer::add(int id, int timeOut, const TimeoutCallBack& cb){
             siftup_(idx);
         }
     }else{
-        
         heap_.push_back({id,std::chrono::high_resolution_clock::now()+std::chrono::microseconds(timeOut),cb});
         ref_[id]=heap_.size()-1;
         siftup_(heap_.size()-1);

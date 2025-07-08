@@ -1,12 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-15
- * @copyleft Apache 2.0
- */ 
-
-#ifndef HTTP_CONN_H
-#define HTTP_CONN_H
-
+#pragma once
 #include <sys/types.h>
 #include <sys/uio.h>     // readv/writev
 #include <arpa/inet.h>   // sockaddr_in
@@ -43,13 +35,9 @@ public:
     
     bool process();
 
-    int ToWriteBytes() { 
-        return iov_[0].iov_len + iov_[1].iov_len; 
-    }
+    int ToWriteBytes();
 
-    bool IsKeepAlive() const {
-        return request_.IsKeepAlive();
-    }
+    bool IsKeepAlive() const;
 
     static bool isET;
     static const char* srcDir;
@@ -71,6 +59,3 @@ private:
     HttpRequest request_;
     HttpResponse response_;
 };
-
-
-#endif //HTTP_CONN_H

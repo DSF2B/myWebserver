@@ -1,0 +1,52 @@
+[
+{
+  "directory": "/home/zilu/桌面/mywebserver/build",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/myWeberver.dir/code/main.cpp.o -c /home/zilu/桌面/mywebserver/code/main.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/main.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/buffer/buffer.cpp.o -c /home/zilu/桌面/mywebserver/code/buffer/buffer.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/buffer/buffer.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/http/httpconn.cpp.o -c /home/zilu/桌面/mywebserver/code/http/httpconn.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/http/httpconn.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/http/httprequest.cpp.o -c /home/zilu/桌面/mywebserver/code/http/httprequest.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/http/httprequest.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/http/httpresponse.cpp.o -c /home/zilu/桌面/mywebserver/code/http/httpresponse.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/http/httpresponse.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/log/log.cpp.o -c /home/zilu/桌面/mywebserver/code/log/log.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/log/log.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/pool/sqlconnpool.cpp.o -c /home/zilu/桌面/mywebserver/code/pool/sqlconnpool.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/pool/sqlconnpool.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/server/epoller.cpp.o -c /home/zilu/桌面/mywebserver/code/server/epoller.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/server/epoller.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/server/webserver.cpp.o -c /home/zilu/桌面/mywebserver/code/server/webserver.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/server/webserver.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/mywebserver/build/code",
+  "command": "/usr/bin/g++ -DUSE_SQL_CONN_POOL -I/home/zilu/桌面/mywebserver/code -I/home/zilu/桌面/mywebserver/code/buffer -I/home/zilu/桌面/mywebserver/code/http -I/home/zilu/桌面/mywebserver/code/log -I/home/zilu/桌面/mywebserver/code/pool -I/home/zilu/桌面/mywebserver/code/server -I/home/zilu/桌面/mywebserver/code/timer -g -std=gnu++14 -o CMakeFiles/webserver_core.dir/timer/heaptimer.cpp.o -c /home/zilu/桌面/mywebserver/code/timer/heaptimer.cpp",
+  "file": "/home/zilu/桌面/mywebserver/code/timer/heaptimer.cpp"
+}
+]

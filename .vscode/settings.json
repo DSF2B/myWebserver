@@ -1,6 +1,12 @@
 {
     "files.associations": {
+        "sstream": "cpp",
+        "string": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp",
         "condition_variable": "cpp",
+        "atomic": "cpp",
+        "mutex": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",
@@ -16,6 +22,7 @@
         "atomic": "cpp",
         "bit": "cpp",
         "bitset": "cpp",
+        "bit": "cpp",
         "chrono": "cpp",
         "compare": "cpp",
         "concepts": "cpp",

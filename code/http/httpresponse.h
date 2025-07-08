@@ -1,10 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-25
- * @copyleft Apache 2.0
- */ 
-#ifndef HTTP_RESPONSE_H
-#define HTTP_RESPONSE_H
+#pragma once
 
 #include <unordered_map>
 #include <fcntl.h>       // open
@@ -18,7 +12,7 @@
 class HttpResponse {
 public:
     HttpResponse();
-    ~HttpResponse();
+    ~HttpResponse(); 
 
     void Init(const std::string& srcDir, std::string& path, bool isKeepAlive = false, int code = -1);
     void MakeResponse(Buffer& buff);
@@ -26,7 +20,7 @@ public:
     char* File();
     size_t FileLen() const;
     void ErrorContent(Buffer& buff, std::string message);
-    int Code() const { return code_; }
+    int Code() const;
 
 private:
     void AddStateLine_(Buffer &buff);
@@ -49,6 +43,3 @@ private:
     static const std::unordered_map<int, std::string> CODE_STATUS;
     static const std::unordered_map<int, std::string> CODE_PATH;
 };
-
-
-#endif //HTTP_RESPONSE_H

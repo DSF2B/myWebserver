@@ -14,7 +14,7 @@ SqlConnPool* SqlConnPool::Instance(){
 void SqlConnPool::Init(const char* host, int port,
 const char* user,const char* pwd, 
 const char* dbName, int connSize){
-    for(int i=0;i<connSize){
+    for(int i=0;i<connSize;i++){
         MYSQL* conn=mysql_init(nullptr);
         if(!conn){
             LOG_ERROR("MYSQL init error");
