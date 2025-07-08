@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/myWebserver.dir/code/main.cpp.o -o ../myWebserver   -L/home/zilu/桌面/myWebserver/lib  -Wl,-rpath,/home/zilu/桌面/myWebserver/lib ../lib/libwebserver_core.so -lrt -lpthread -lmysqlclient 

@@ -1,10 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-16
- * @copyleft Apache 2.0
- */ 
-#ifndef LOG_H
-#define LOG_H
+#pragma once
 
 #include <mutex> 
 #include <string>
@@ -88,4 +82,3 @@ private:
 #define LOG_WARN(format, ...) do {LOG_BASE(2, format, ##__VA_ARGS__)} while(0);
 #define LOG_ERROR(format, ...) do {LOG_BASE(3, format, ##__VA_ARGS__)} while(0);
 
-#endif //LOG_H

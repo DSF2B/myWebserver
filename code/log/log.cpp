@@ -8,11 +8,14 @@ Log::Log(){
     isAsync_ = false;
 }
 Log:: ~Log(){
-    while(!deque_->empty()) {
-        deque_->flush();    // 唤醒消费者，处理掉剩下的任务
+    if(writeThread_ && writeThread_->joinable()) {
+        while(!deque_->empty()) {
+            deque_->flush();    // 唤醒消费者，处理掉剩下的任务
+        }
+
+        deque_->Close();    // 关闭队列
+        writeThread_->join();   // 等待当前线程完成手中的任务
     }
-    deque_->Close();    // 关闭队列
-    writeThread_->join();   // 等待当前线程完成手中的任务
     if(fp_) {       // 冲洗文件缓冲区，关闭文件描述符
         std::lock_guard<std::mutex> locker(mtx_);
         flush();        // 清空缓冲区中的数据
@@ -21,20 +24,20 @@ Log:: ~Log(){
 
 }
 // 初始化日志实例（阻塞队列最大容量、日志保存路径、日志文件后缀）
-void Log::init(int level, const char* path, const char* suffix, int maxQueCapacity) {
+void Log::init(int level=1, const char* path, const char* suffix, int maxQueCapacity) {
     isOpen_ = true;
     level_ = level;
     path_ = path;
     suffix_ = suffix;
 
-    if(maxQueCapacity){
+    if(maxQueCapacity>0){
         isAsync_=true;
         if(!deque_){
             auto newQue = std::make_unique<BlockDeque<std::string>>();
             deque_= std::move(newQue);
 
-            auto t = std::make_unique<std::thread>(FlushLogThread);
-            writeThread_ = std::move(t);
+            auto NewThread = std::make_unique<std::thread>(FlushLogThread);
+            writeThread_ = std::move(NewThread);
         }
     }else{
         isAsync_=false;
@@ -69,6 +72,8 @@ void Log::init(int level, const char* path, const char* suffix, int maxQueCapaci
         assert(fp_!=nullptr);
     }
 }
+
+
 // 懒汉模式 c++11无需加锁 类外定义,不加static关键字
 Log* Log::Instance(){
     static Log log;
@@ -145,8 +150,10 @@ void Log::write(int level, const char *format,...){
         }
         buff_.RetrieveAll();
     }
-
 }
+
+
+
 void Log::flush(){
     if(isAsync_){
         deque_->flush();

@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/myWeberver.dir/code/main.cpp.o -o /home/zilu/桌面/mywebserver/bin/myWeberver  code/libwebserver_core.a -lmysqlclient -lrt -lpthread 

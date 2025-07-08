@@ -1,2 +1,0 @@
-/usr/bin/ar qc libwebserver_core.a CMakeFiles/webserver_core.dir/buffer/buffer.cpp.o CMakeFiles/webserver_core.dir/http/httpconn.cpp.o CMakeFiles/webserver_core.dir/http/httprequest.cpp.o CMakeFiles/webserver_core.dir/http/httpresponse.cpp.o CMakeFiles/webserver_core.dir/log/log.cpp.o CMakeFiles/webserver_core.dir/pool/sqlconnpool.cpp.o CMakeFiles/webserver_core.dir/server/epoller.cpp.o CMakeFiles/webserver_core.dir/server/webserver.cpp.o CMakeFiles/webserver_core.dir/timer/heaptimer.cpp.o
-/usr/bin/ranlib libwebserver_core.a

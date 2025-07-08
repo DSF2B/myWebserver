@@ -1,6 +1,5 @@
-/home/zilu/桌面/mywebserver/build/CMakeFiles/myWeberver.dir
-/home/zilu/桌面/mywebserver/build/CMakeFiles/edit_cache.dir
-/home/zilu/桌面/mywebserver/build/CMakeFiles/rebuild_cache.dir
-/home/zilu/桌面/mywebserver/build/code/CMakeFiles/webserver_core.dir
-/home/zilu/桌面/mywebserver/build/code/CMakeFiles/edit_cache.dir
-/home/zilu/桌面/mywebserver/build/code/CMakeFiles/rebuild_cache.dir
+/home/zilu/桌面/myWebserver/build/CMakeFiles/webserver_core.dir
+/home/zilu/桌面/myWebserver/build/CMakeFiles/myWebserver.dir
+/home/zilu/桌面/myWebserver/build/CMakeFiles/testLog.dir
+/home/zilu/桌面/myWebserver/build/CMakeFiles/edit_cache.dir
+/home/zilu/桌面/myWebserver/build/CMakeFiles/rebuild_cache.dir

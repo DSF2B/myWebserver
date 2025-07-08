@@ -15,20 +15,22 @@ void SqlConnPool::Init(const char* host, int port,
 const char* user,const char* pwd, 
 const char* dbName, int connSize){
     for(int i=0;i<connSize;i++){
-        MYSQL* conn=mysql_init(nullptr);
-        if(!conn){
+        MYSQL *sql = nullptr;
+        sql = mysql_init(sql);
+        if(!sql){
             LOG_ERROR("MYSQL init error");
-            assert(conn);
+            assert(sql);
         }
-        conn = mysql_real_connect(conn, host, user, pwd, dbName, port, nullptr, 0);
-        if (!conn) {
+        sql = mysql_real_connect(sql, host, user, pwd, dbName, port, nullptr, 0);
+        if (!sql) {
             LOG_ERROR("MYSQL connect error");
         }
-        connQue_.emplace(conn);
+        connQue_.emplace(sql);
     }
-    MAX_CONN_=connQue_.size();
+    MAX_CONN_=connSize;
     sem_init(&semId_,0,MAX_CONN_);
 }
+
 MYSQL* SqlConnPool::GetConn(){
     MYSQL* conn=nullptr;
     if(connQue_.empty()){
@@ -60,5 +62,3 @@ void SqlConnPool::ClosePool(){
     }
     mysql_library_end();
 }
-
-

@@ -10,7 +10,7 @@ WebServer::WebServer(int port, int trigMode, int timeoutMS, bool OptLinger,
     //设置服务器参数　＋　初始化定时器／线程池／反应堆／连接队列
     srcDir_=getcwd(nullptr,256);
     assert(srcDir_);
-    std::strcat(srcDir_,"resources");
+    std::strncat(srcDir_, "/resources/", 16);
     HttpConn::userCount=0;
     HttpConn::srcDir=srcDir_;
 
@@ -23,7 +23,8 @@ WebServer::WebServer(int port, int trigMode, int timeoutMS, bool OptLinger,
         Log::Instance()->init(logLevel,"./log",".log",logQueSize);
         if(isClose_){
             LOG_ERROR("========== Server init error!==========");
-        }        else {
+        }        
+        else {
             LOG_INFO("========== Server init ==========");
             LOG_INFO("Port:%d, OpenLinger: %s", port_, OptLinger? "true":"false");
             LOG_INFO("Listen Mode: %s, OpenConn Mode: %s",
@@ -93,13 +94,11 @@ bool WebServer::InitSocket_(){
     //ntohs():将一个16位数由网络字节顺序转换为主机字节顺序
     //ntohl():将一个32位数由网络字节顺序转换为主机字节顺序
 
-    {
-        //struct linger用于控制调用 close() 关闭套接字时的行为
-        struct linger optLinger={0};
-        if(openLinger_){
-            optLinger.l_onoff = 1;        // 启用 SO_LINGER
-            optLinger.l_linger = 1;       // 设置超时为 1 秒
-        }
+    //struct linger用于控制调用 close() 关闭套接字时的行为
+    struct linger optLinger={0};
+    if(openLinger_){
+        optLinger.l_onoff = 1;        // 启用 SO_LINGER
+        optLinger.l_linger = 1;       // 设置超时为 1 秒
     }
 
     listenFd_=socket(AF_INET,SOCK_STREAM,0);
@@ -141,37 +140,35 @@ bool WebServer::InitSocket_(){
 
 }
 
-void WebServer::Start(){
-    int timeMS=-1;// epoll wait timeout == -1 无事件将阻塞
-    if(!isClose_){
-        LOG_INFO("========== Server start =========="); 
-    }
-    while(!isClose_){
-        if(timeoutMS_ > 0){
-            timeMS=timer_->GetNextTick();
+void WebServer::Start() {
+    int timeMS = -1;  /* epoll wait timeout == -1 无事件将阻塞 */
+    if(!isClose_) { LOG_INFO("========== Server start =========="); }
+    while(!isClose_) {
+        if(timeoutMS_ > 0) {
+            timeMS = timer_->GetNextTick();
         }
-        int eventCnt=epoller_->Wait(timeMS);
-        for(int i=0;i<eventCnt;i++){
-            int fd=epoller_->GetEventFd(i);
-            uint32_t events=epoller_->GetEvents(i);
-            if(fd==listenFd_){
+        int eventCnt = epoller_->Wait(timeMS);
+        for(int i = 0; i < eventCnt; i++) {
+            /* 处理事件 */
+            int fd = epoller_->GetEventFd(i);
+            uint32_t events = epoller_->GetEvents(i);
+            if(fd == listenFd_) {
                 DealListen_();
-            }else if(events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
-                auto it=users_.find(fd);
-                assert(it != users_.end());
-                CloseConn_(&it->second);
-            }else if(events & EPOLLIN){
-                auto it=users_.find(fd);
-                assert(it != users_.end());
-                DealRead_(&it->second); 
-            }else if(events & EPOLLOUT){
-                auto it=users_.find(fd);
-                assert(it != users_.end());
-                DealWrite_(&it->second);
-            }else{
+            }
+            else if(events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+                assert(users_.count(fd) > 0);
+                CloseConn_(&users_[fd]);
+            }
+            else if(events & EPOLLIN) {
+                assert(users_.count(fd) > 0);
+                DealRead_(&users_[fd]);
+            }
+            else if(events & EPOLLOUT) {
+                assert(users_.count(fd) > 0);
+                DealWrite_(&users_[fd]);
+            } else {
                 LOG_ERROR("Unexpected event");
             }
-
         }
     }
 }
@@ -277,4 +274,3 @@ int WebServer::SetFdNonblock(int fd){
     int old_option=fcntl(fd,F_GETFD);
     return fcntl(fd,F_SETFD,old_option|O_NONBLOCK);
 }
-
