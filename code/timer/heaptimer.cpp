@@ -1,7 +1,7 @@
 #include "heaptimer.h"
 
 HeapTimer::HeapTimer() { 
-    heap_.reserve(64);//只分配内存，不构造元素
+    heap_.reserve(1024);//只分配内存，不构造元素
 }
 HeapTimer::~HeapTimer() {
      clear(); 

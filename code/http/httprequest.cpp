@@ -178,28 +178,63 @@ void HttpRequest::ParseFromUrlencoded_(){
     }
 }
 
-bool HttpRequest::ParseRequestLine_(const std::string& line){
-    std::regex pattern("^([^ ]+) ([^ ]+) HTTP/([^ ]+)$");
-    std::smatch subMatch;
-    if(std::regex_match(line,subMatch,pattern)){
-        method_=subMatch[0];
-        path_=subMatch[1];
-        version_=subMatch[2];
-        state_=HEADERS;
-        return true;
-    }
-    LOG_ERROR("Request line parse error");
-    return false;
+// bool HttpRequest::ParseRequestLine_(const std::string& line){
+//     std::regex pattern("^([^ ]+) ([^ ]+) HTTP/([^ ]+)$");
+//     std::smatch subMatch;
+//     if(std::regex_match(line,subMatch,pattern)){
+//         method_=subMatch[0];
+//         path_=subMatch[1];
+//         version_=subMatch[2];
+//         state_=HEADERS;
+//         return true;
+//     }
+//     LOG_ERROR("Request line parse error");
+//     return false;
+// }
+bool HttpRequest::ParseRequestLine_(const std::string& line) {
+    // 查找第一个空格（方法结束位置）
+    size_t pos1 = line.find(' ');
+    if (pos1 == std::string::npos) return false;
+    // 查找第二个空格（URI结束位置）
+    size_t pos2 = line.find(' ', pos1 + 1);
+    if (pos2 == std::string::npos) return false;
+    // 检查协议前缀 "HTTP/"
+    if (line.substr(pos2 + 1, 5) != "HTTP/") return false;
+    // 提取各字段
+    method_  = line.substr(0, pos1);
+    path_    = line.substr(pos1 + 1, pos2 - pos1 - 1);
+    version_ = line.substr(pos2 + 6); // 跳过 "HTTP/"
+    state_   = HEADERS;
+    return true;
 }
-void HttpRequest::ParseHeader_(const std::string& line){
-    std::regex pattern("^([^:]): ?(.*)$");
-    std::smatch subMatch;
-    if(std::regex_match(line,subMatch,pattern)){
-        header_[subMatch[0]]=subMatch[1];
-    }else{
-        state_=BODY;
+// void HttpRequest::ParseHeader_(const std::string& line){
+//     std::regex pattern("^([^:]): ?(.*)$");
+//     std::smatch subMatch;
+//     if(std::regex_match(line,subMatch,pattern)){
+//         header_[subMatch[0]]=subMatch[1];
+//     }else{
+//         state_=BODY;
+//     }
+// }
+
+void HttpRequest::ParseHeader_(const std::string& line) {
+    size_t pos = line.find(':');
+    if (pos == std::string::npos) {
+        state_ = BODY;
+        return;
     }
+    // 提取 Key
+    std::string key = line.substr(0, pos);
+    // 提取 Value (跳过冒号和空格)
+    size_t value_start = pos + 1;
+    while (value_start < line.size() && line[value_start] == ' ') {
+        value_start++;
+    }
+    std::string value = line.substr(value_start);
+    // 存储键值对
+    header_[key] = value;
 }
+
 void HttpRequest::ParseBody_(const std::string& line){
     body_=line;
     ParsePost_();

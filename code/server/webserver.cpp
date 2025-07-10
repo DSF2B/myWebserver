@@ -106,6 +106,14 @@ bool WebServer::InitSocket_(){
         LOG_ERROR("Create socket error!", port_);
         return false;
     }
+
+    ret = setsockopt(listenFd_, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
+    if(ret < 0) {
+        close(listenFd_);
+        LOG_ERROR("Init linger error!", port_);
+        return false;
+    }
+    
     int optval=1;
     ret=setsockopt(listenFd_,SOL_SOCKET,SO_REUSEADDR,(const void*)&optval,sizeof(int));
     if(ret == -1) {
@@ -120,7 +128,7 @@ bool WebServer::InitSocket_(){
         return false;
     }
 
-    ret=listen(listenFd_,6);
+    ret=listen(listenFd_,4096);
     if(ret < 0) {
         LOG_ERROR("Listen port:%d error!", port_);
         close(listenFd_);
@@ -177,7 +185,7 @@ void WebServer::DealListen_(){
     struct sockaddr_in addr;
     socklen_t len=sizeof(addr);
     do{
-        int fd=accept(fd,(struct sockaddr*)&addr,&len);
+        int fd=accept(listenFd_,(struct sockaddr*)&addr,&len);
         if(fd<=0)return ;
         else if(HttpConn::userCount >=MAX_FD){
             SendError_(fd, "Server busy!");
@@ -271,6 +279,12 @@ void WebServer::OnProcess(HttpConn* client){
 
 int WebServer::SetFdNonblock(int fd){
     assert(fd>0);
+    // 复制一个已经有的描述符（cmd=F_DUPFD或者F_DUPFD_CLOEXEC）
+    // 获取/设置文件描述符标志（cmd=F_GETFD或者F_SETFD）
+    // 获取/设置文件状态标志（cmd=F_GETFL或者F_SETFL）
     int old_option=fcntl(fd,F_GETFD);
-    return fcntl(fd,F_SETFD,old_option|O_NONBLOCK);
+    //F_GETFD\F_SETFD:FD_CLOEXEC
+    //F_GETFL:O_RDONLY 、O_WRONLY、O_RDWR
+    //F_SETFL:O_APPEND、 O_ASYNC、 O_DIRECT、 O_NOATIME、O_NONBLOCK
+    return fcntl(fd,F_SETFL,old_option|O_NONBLOCK);
 }
