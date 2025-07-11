@@ -167,7 +167,7 @@ CMakeFiles/webserver_core.dir/code/log/log.cpp.o: \
  /usr/include/c++/11/bits/allocated_ptr.h \
  /usr/include/c++/11/ext/aligned_buffer.h \
  /usr/include/c++/11/ext/concurrence.h \
- /home/zilu/桌面/myWebserver/code/log/../buffer/buffer.h \
+ /home/zilu/桌面/myWebserver/code/buffer/buffer.h \
  /usr/include/c++/11/cstring /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/bits/ios_base.h \

@@ -75,9 +75,9 @@ CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o: \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
- /home/zilu/桌面/myWebserver/code/http/../log/log.h \
- /usr/include/c++/11/mutex /usr/include/c++/11/tuple \
- /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
+ /home/zilu/桌面/myWebserver/code/log/log.h /usr/include/c++/11/mutex \
+ /usr/include/c++/11/tuple /usr/include/c++/11/utility \
+ /usr/include/c++/11/bits/stl_relops.h \
  /usr/include/c++/11/bits/stl_pair.h /usr/include/c++/11/bits/move.h \
  /usr/include/c++/11/type_traits /usr/include/c++/11/initializer_list \
  /usr/include/c++/11/array /usr/include/c++/11/bits/functexcept.h \
@@ -176,7 +176,7 @@ CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
- /home/zilu/桌面/myWebserver/code/http/../log/blockqueue.h \
+ /home/zilu/桌面/myWebserver/code/log/blockqueue.h \
  /usr/include/c++/11/deque /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_deque.h /usr/include/c++/11/bits/deque.tcc \
  /usr/include/c++/11/condition_variable \
@@ -185,7 +185,7 @@ CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o: \
  /usr/include/c++/11/bits/allocated_ptr.h \
  /usr/include/c++/11/ext/aligned_buffer.h \
  /usr/include/c++/11/ext/concurrence.h \
- /home/zilu/桌面/myWebserver/code/http/../log/../buffer/buffer.h \
+ /home/zilu/桌面/myWebserver/code/buffer/buffer.h \
  /usr/include/c++/11/cstring /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/bits/ios_base.h \
@@ -214,8 +214,8 @@ CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o: \
  /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/atomic \
  /usr/include/c++/11/bits/atomic_base.h \
  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
- /home/zilu/桌面/myWebserver/code/http/../pool/sqlconnRAII.h \
- /home/zilu/桌面/myWebserver/code/http/../pool/sqlconnpool.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnRAII.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h \
  /usr/include/mysql/mysql.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
  /usr/include/mysql/field_types.h /usr/include/mysql/my_list.h \
@@ -267,7 +267,7 @@ CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o: \
  /usr/include/c++/11/bits/regex.h /usr/include/c++/11/bits/regex.tcc \
  /usr/include/c++/11/bits/regex_executor.h \
  /usr/include/c++/11/bits/regex_executor.tcc \
- /home/zilu/桌面/myWebserver/code/http/../pool/sqlconnpool.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h \
  /home/zilu/桌面/myWebserver/code/http/httpresponse.h \
  /usr/include/fcntl.h /usr/include/x86_64-linux-gnu/bits/fcntl.h \
  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \

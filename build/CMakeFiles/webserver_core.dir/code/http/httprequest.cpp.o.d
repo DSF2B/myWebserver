@@ -213,7 +213,7 @@ CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o: \
  /usr/include/mysql/plugin_auth_common.h \
  /usr/include/mysql/mysql_version.h /usr/include/mysql/mysql_time.h \
  /usr/include/mysql/errmsg.h \
- /home/zilu/桌面/myWebserver/code/http/../buffer/buffer.h \
+ /home/zilu/桌面/myWebserver/code/buffer/buffer.h \
  /usr/include/c++/11/iostream /usr/include/unistd.h \
  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -225,8 +225,7 @@ CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/uio-ext.h /usr/include/c++/11/atomic \
- /usr/include/assert.h \
- /home/zilu/桌面/myWebserver/code/http/../log/log.h \
+ /usr/include/assert.h /home/zilu/桌面/myWebserver/code/log/log.h \
  /usr/include/c++/11/mutex /usr/include/c++/11/chrono \
  /usr/include/c++/11/ratio /usr/include/c++/11/limits \
  /usr/include/c++/11/bits/parse_numbers.h \
@@ -250,10 +249,10 @@ CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
- /home/zilu/桌面/myWebserver/code/http/../log/blockqueue.h \
+ /home/zilu/桌面/myWebserver/code/log/blockqueue.h \
  /usr/include/c++/11/condition_variable \
- /home/zilu/桌面/myWebserver/code/http/../pool/sqlconnpool.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h \
  /usr/include/c++/11/queue /usr/include/c++/11/bits/stl_queue.h \
  /usr/include/semaphore.h /usr/include/x86_64-linux-gnu/bits/semaphore.h \
- /home/zilu/桌面/myWebserver/code/http/../pool/sqlconnRAII.h \
- /home/zilu/桌面/myWebserver/code/http/../pool/sqlconnpool.h
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnRAII.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h

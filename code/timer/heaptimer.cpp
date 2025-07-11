@@ -6,67 +6,87 @@ HeapTimer::HeapTimer() {
 HeapTimer::~HeapTimer() {
      clear(); 
 }
+
 void HeapTimer::adjust(int id, int newExpires){
-    auto it =ref_.find(id);
-    assert(!heap_.empty() && it!=ref_.end());
-    heap_[it->second].expires = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(newExpires);
-    siftdown_(it->second,heap_.size());    
+    std::lock_guard<std::mutex> lock(mtx_);
+    if(ref_.count(id) == 0){
+        std::cout<<id;
+        return;
+    }
+    assert(!heap_.empty() && ref_.count(id)>0);
+    int idx=ref_[id];
+    heap_[idx].expires = std::chrono::high_resolution_clock::now() + MS(newExpires);
+    siftdown_(idx,heap_.size());    
 }
 void HeapTimer::add(int id, int timeOut, const TimeoutCallBack& cb){
+    std::lock_guard<std::mutex> lock(mtx_);
     assert(id>=0);
     auto it=ref_.find(id);
     if(it!=ref_.end()){
         int idx = it->second;
-        heap_[idx].expires = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(timeOut);
+        heap_[idx].expires = std::chrono::high_resolution_clock::now() + MS(timeOut);
         heap_[idx].cb=cb;
         if(!siftdown_(idx,heap_.size())){
             siftup_(idx);
         }
     }else{
-        heap_.push_back({id,std::chrono::high_resolution_clock::now()+std::chrono::microseconds(timeOut),cb});
+        heap_.push_back({id,std::chrono::high_resolution_clock::now()+MS(timeOut),cb});
         ref_[id]=heap_.size()-1;
         siftup_(heap_.size()-1);
     }
 }
-// 删除指定id，并触发回调函数
-void HeapTimer::doWork(int id){
-    auto it=ref_.find(id);
-    if(heap_.empty() || it==ref_.end()){
-        return ;
-    }
-    auto node=heap_[it->second];
-    node.cb();
-    del_(it->second);    
-}
 
-void HeapTimer::tick(){
-    if(heap_.empty()){
-        return ;
-    }
-    while(!heap_.empty()){
-        auto node=heap_.front();
-        if(std::chrono::duration_cast<std::chrono::microseconds>(node.expires-std::chrono::high_resolution_clock::now()).count()>0){
-            //超时时间未到
-            break;
-        }
-        node.cb();
-        HeapTimer::pop();
-    }
-}
-void HeapTimer::pop(){
-    assert(!heap_.empty());
-    del_(0);
-}
+// void HeapTimer::tick(){
+//     if(heap_.empty()){
+//         return ;
+//     }
+//     while(!heap_.empty()){
+//         auto node=heap_.front();
+//         if(std::chrono::duration_cast<std::chrono::microseconds>(node.expires-std::chrono::high_resolution_clock::now()).count()>0){
+//             //超时时间未到
+//             break;
+//         }
+//         node.cb();
+//         HeapTimer::pop();
+//     }
+// }
 //返回下一个超时时间间隔
-int HeapTimer::GetNextTick(){
-    tick();
-    int res_timeout_sec=-1;
-    if(!heap_.empty()){
-        res_timeout_sec=std::chrono::duration_cast<std::chrono::milliseconds>(heap_.front().expires - std::chrono::high_resolution_clock::now()).count();
-        if(res_timeout_sec<0)return 0;
-    }
-    return res_timeout_sec;
+// int HeapTimer::GetNextTick(){
+//     std::lock_guard<std::mutex> lock(mtx_);
+//     tick();
+//     int res_timeout_sec=100;
+//     if(!heap_.empty()){
+//         res_timeout_sec=std::chrono::duration_cast<MS>(heap_.front().expires - std::chrono::high_resolution_clock::now()).count();
+//         if(res_timeout_sec<0)return 0;
+//     }
+//     return res_timeout_sec;
 
+// }
+int HeapTimer::GetNextTick() {
+    std::unique_lock<std::mutex> lock(mtx_);
+    // 处理超时事件（不执行回调）
+    while (!heap_.empty()) {
+        auto& node = heap_.front();
+        auto now = Clock::now();
+        if (node.expires > now) break;
+        // 提取回调但不执行（避免在锁内执行）
+        callbacks_.push_back(std::move(node.cb));
+        pop(); // 内部无锁版本
+    }
+    // 计算下次超时时间
+    int next_timeout = -1;
+    if (!heap_.empty()) {
+        auto duration = heap_.front().expires - Clock::now();
+        next_timeout = std::chrono::duration_cast<MS>(duration).count();
+        next_timeout = std::max(next_timeout, 0);
+    }
+    lock.unlock(); // 提前释放锁
+    // 在锁外执行回调
+    for (auto& cb : callbacks_) {
+        if (cb) cb();
+    }
+    callbacks_.clear();
+    return next_timeout;
 }
 void HeapTimer::del_(size_t i){
     assert(i>=0 && i<heap_.size());
@@ -97,6 +117,10 @@ void HeapTimer::siftup_(size_t i){
         }
     }
 }
+void HeapTimer::pop(){
+    assert(!heap_.empty());
+    del_(0);
+}
 // false：不需要下滑  true：下滑成功
 bool HeapTimer::siftdown_(size_t i, size_t n){
     assert(i >= 0 && i < heap_.size());
@@ -125,6 +149,7 @@ void HeapTimer::SwapNode_(size_t i, size_t j){
     ref_[heap_[j].id]=j;
 }
 void HeapTimer::clear(){
+    std::lock_guard<std::mutex> lock(mtx_);
     ref_.clear();
     heap_.clear();
 }

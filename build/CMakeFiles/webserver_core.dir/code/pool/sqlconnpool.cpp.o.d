@@ -159,7 +159,7 @@ CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o: \
  /usr/include/c++/11/thread /usr/include/c++/11/bits/std_thread.h \
  /usr/include/c++/11/bits/refwrap.h /usr/include/c++/11/bits/unique_ptr.h \
  /usr/include/c++/11/bits/this_thread_sleep.h \
- /home/zilu/桌面/myWebserver/code/pool/../log/log.h \
+ /home/zilu/桌面/myWebserver/code/log/log.h \
  /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/string.h \
  /usr/include/strings.h /usr/include/assert.h \
  /usr/include/x86_64-linux-gnu/sys/stat.h \
@@ -177,14 +177,14 @@ CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
- /home/zilu/桌面/myWebserver/code/pool/../log/blockqueue.h \
+ /home/zilu/桌面/myWebserver/code/log/blockqueue.h \
  /usr/include/c++/11/condition_variable \
  /usr/include/c++/11/bits/shared_ptr.h \
  /usr/include/c++/11/bits/shared_ptr_base.h \
  /usr/include/c++/11/bits/allocated_ptr.h \
  /usr/include/c++/11/ext/aligned_buffer.h \
  /usr/include/c++/11/ext/concurrence.h \
- /home/zilu/桌面/myWebserver/code/pool/../log/../buffer/buffer.h \
+ /home/zilu/桌面/myWebserver/code/buffer/buffer.h \
  /usr/include/c++/11/cstring /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/bits/ios_base.h \

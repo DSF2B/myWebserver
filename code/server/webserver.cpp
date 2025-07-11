@@ -3,9 +3,9 @@
 WebServer::WebServer(int port, int trigMode, int timeoutMS, bool OptLinger, 
     int sqlPort, const char* sqlUser, const  char* sqlPwd, 
     const char* dbName, int connPoolNum, int threadNum,
-    bool openLog, int logLevel, int logQueSize):
-    port_(port),openLinger_(OptLinger),timeoutMS_(timeoutMS),isClose_(false),
-    timer_(new HeapTimer()),threadpool_(new ThreadPool(threadNum)),epoller_(new Epoller())
+    bool openLog, int logLevel, int logQueSize,bool openThreadPool):
+    port_(port),openLinger_(OptLinger),isClose_(false),
+    epoller_(new Epoller())
 {
     //设置服务器参数　＋　初始化定时器／线程池／反应堆／连接队列
     srcDir_=getcwd(nullptr,256);
@@ -34,7 +34,17 @@ WebServer::WebServer(int port, int trigMode, int timeoutMS, bool OptLinger,
             LOG_INFO("srcDir: %s", HttpConn::srcDir);
             LOG_INFO("SqlConnPool num: %d, ThreadPool num: %d", connPoolNum, threadNum);
         }        
-    }   
+    }
+    if(openThreadPool){
+        threadpool_=std::make_shared<ThreadPool>(threadNum);
+    }else{
+        threadpool_=nullptr;
+    }
+    
+    for (int i = 0; i < subReactorNum_; ++i) {
+        subReactors_.emplace_back(std::make_unique<SubReactor>(timeoutMS,connEvent_,openThreadPool,threadpool_));
+        subReactors_[i]->Start(); // 启动子线程
+    }
 }
 
 WebServer::~WebServer(){
@@ -43,6 +53,7 @@ WebServer::~WebServer(){
     isClose_=true;
     free(srcDir_);
     SqlConnPool::Instance()->ClosePool();
+    
 }
 
 void WebServer::InitEventMode_(int trigMode){
@@ -128,7 +139,7 @@ bool WebServer::InitSocket_(){
         return false;
     }
 
-    ret=listen(listenFd_,512);
+    ret=listen(listenFd_,1024);
     if(ret < 0) {
         LOG_ERROR("Listen port:%d error!", port_);
         close(listenFd_);
@@ -149,33 +160,14 @@ bool WebServer::InitSocket_(){
 }
 
 void WebServer::Start() {
-    int timeMS = -1;  /* epoll wait timeout == -1 无事件将阻塞 */
     if(!isClose_) { LOG_INFO("========== Server start =========="); }
     while(!isClose_) {
-        if(timeoutMS_ > 0) {
-            timeMS = timer_->GetNextTick();
-        }
-        int eventCnt = epoller_->Wait(timeMS);
+        int eventCnt = epoller_->Wait(100);
         for(int i = 0; i < eventCnt; i++) {
             /* 处理事件 */
             int fd = epoller_->GetEventFd(i);
-            uint32_t events = epoller_->GetEvents(i);
             if(fd == listenFd_) {
                 DealListen_();
-            }
-            else if(events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
-                assert(users_.count(fd) > 0);
-                CloseConn_(&users_[fd]);
-            }
-            else if(events & EPOLLIN) {
-                assert(users_.count(fd) > 0);
-                DealRead_(&users_[fd]);
-            }
-            else if(events & EPOLLOUT) {
-                assert(users_.count(fd) > 0);
-                DealWrite_(&users_[fd]);
-            } else {
-                LOG_ERROR("Unexpected event");
             }
         }
     }
@@ -187,30 +179,23 @@ void WebServer::DealListen_(){
     do{
         int fd=accept(listenFd_,(struct sockaddr*)&addr,&len);
         if(fd<=0)return ;
-        else if(HttpConn::userCount >=MAX_FD){
+
+        AddClient_(fd,addr);
+        if(HttpConn::userCount >=MAX_FD){
             SendError_(fd, "Server busy!");
             LOG_WARN("Clients is full!");
             return;
         }
-        AddClient_(fd,addr);
     }while(listenEvent_ & EPOLLET);
 }
 void WebServer::AddClient_(int fd, sockaddr_in addr){
     assert(fd>0);
-    users_[fd].init(fd,addr);
-    if(timeoutMS_ >0){
-        timer_->add(fd,timeoutMS_,std::bind(&WebServer::CloseConn_,this,&users_[fd]));
-    }
-    epoller_->AddFd(fd,EPOLLIN | connEvent_);
-    SetFdNonblock(fd);
-    LOG_INFO("Client[%d] in!", users_[fd].GetFd());
+    // 轮询选择一个子Reactor
+    int subReactorIdx = fd % subReactors_.size();
+    auto& subReactor = subReactors_[subReactorIdx];
+    subReactor->AddClient(fd, EPOLLIN | connEvent_, addr);//修改subreactor，需要锁
 }
-void WebServer::CloseConn_(HttpConn* client){
-    assert(client);
-    LOG_INFO("Client[%d] quit!", client->GetFd());
-    epoller_->DelFd(client->GetFd());
-    client->Close();
-}
+
 void WebServer::SendError_(int fd, const char*info){
     assert(fd>0);
     int ret=send(fd,info,strlen(info),0);
@@ -219,64 +204,6 @@ void WebServer::SendError_(int fd, const char*info){
     }
     close(fd);
 }
-
-
-void WebServer::DealRead_(HttpConn* client){
-    assert(client);
-    ExtentTime_(client);
-    threadpool_->AddTask(std::bind(&WebServer::OnRead_,this,client));
-}
-void WebServer::ExtentTime_(HttpConn* client){
-    assert(client);
-    if(timeoutMS_>0){
-        timer_->adjust(client->GetFd(),timeoutMS_);
-    }
-}
-void WebServer::DealWrite_(HttpConn* client){
-    assert(client);
-    ExtentTime_(client);
-    threadpool_->AddTask(std::bind(&WebServer::OnWrite_,this,client));
-}
-
-void WebServer::OnRead_(HttpConn* client){
-    assert(client);
-    int ret=-1;
-    int readErrno=0;
-    ret=client->read(&readErrno);
-    if(ret<=0 && readErrno!=EAGAIN){
-        CloseConn_(client);
-        return;
-    }
-    OnProcess(client);
-}
-void WebServer::OnWrite_(HttpConn* client){
-    assert(client);
-    int ret=-1;
-    int writeErrno=0;
-    ret=client->write(&writeErrno);
-    if(client->ToWriteBytes() == 0){
-        if(client->IsKeepAlive()){
-            epoller_->ModFd(client->GetFd(), EPOLLIN | connEvent_);
-            return ;
-        }
-    }else if(ret <0){
-        if(writeErrno == EAGAIN){
-            //内核发送缓冲区已满
-            epoller_->ModFd(client->GetFd(),connEvent_ | EPOLLOUT);
-            return ;
-        }
-    }
-    //数据未写完且错误码非EAGAIN时
-    CloseConn_(client);
-}
-void WebServer::OnProcess(HttpConn* client){
-    if(client->process()){
-        epoller_->ModFd(client->GetFd(),connEvent_ | EPOLLOUT);
-    }else{
-        epoller_->ModFd(client->GetFd(),connEvent_ | EPOLLIN);
-    }
-}
-
 int WebServer::SetFdNonblock(int fd){
     assert(fd>0);
     // 复制一个已经有的描述符（cmd=F_DUPFD或者F_DUPFD_CLOEXEC）
@@ -288,3 +215,5 @@ int WebServer::SetFdNonblock(int fd){
     //F_SETFL:O_APPEND、 O_ASYNC、 O_DIRECT、 O_NOATIME、O_NONBLOCK
     return fcntl(fd,F_SETFL,old_option|O_NONBLOCK);
 }
+
+

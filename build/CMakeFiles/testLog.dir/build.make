@@ -92,7 +92,6 @@ testLog_EXTERNAL_OBJECTS =
 
 ../testLog: CMakeFiles/testLog.dir/test/test.cpp.o
 ../testLog: CMakeFiles/testLog.dir/build.make
-../testLog: ../lib/libwebserver_core.so
 ../testLog: CMakeFiles/testLog.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable ../testLog"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/testLog.dir/link.txt --verbose=$(VERBOSE)

@@ -26,6 +26,11 @@
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp",
+  "file": "/home/zilu/桌面/myWebserver/code/main.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/myWebserver/build",
   "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o -c /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp"
 },
@@ -33,6 +38,11 @@
   "directory": "/home/zilu/桌面/myWebserver/build",
   "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o -c /home/zilu/桌面/myWebserver/code/server/epoller.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/server/epoller.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/myWebserver/build",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o -c /home/zilu/桌面/myWebserver/code/server/subreactor.cpp",
+  "file": "/home/zilu/桌面/myWebserver/code/server/subreactor.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",

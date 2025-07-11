@@ -129,7 +129,6 @@ CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h /usr/include/c++/11/limits \
  /usr/include/c++/11/ctime /usr/include/c++/11/bits/parse_numbers.h \
- /home/zilu/桌面/myWebserver/code/timer/../log/log.h \
  /usr/include/c++/11/mutex /usr/include/c++/11/exception \
  /usr/include/c++/11/bits/exception_ptr.h \
  /usr/include/c++/11/bits/cxxabi_init_exception.h \
@@ -179,7 +178,8 @@ CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
  /usr/include/c++/11/bits/std_mutex.h \
- /usr/include/c++/11/bits/unique_lock.h /usr/include/c++/11/thread \
+ /usr/include/c++/11/bits/unique_lock.h \
+ /home/zilu/桌面/myWebserver/code/log/log.h /usr/include/c++/11/thread \
  /usr/include/c++/11/bits/std_thread.h \
  /usr/include/c++/11/bits/unique_ptr.h \
  /usr/include/c++/11/bits/this_thread_sleep.h \
@@ -193,13 +193,13 @@ CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
- /home/zilu/桌面/myWebserver/code/timer/../log/blockqueue.h \
+ /home/zilu/桌面/myWebserver/code/log/blockqueue.h \
  /usr/include/c++/11/condition_variable \
  /usr/include/c++/11/bits/shared_ptr.h \
  /usr/include/c++/11/bits/shared_ptr_base.h \
  /usr/include/c++/11/bits/allocated_ptr.h \
  /usr/include/c++/11/ext/concurrence.h \
- /home/zilu/桌面/myWebserver/code/timer/../log/../buffer/buffer.h \
+ /home/zilu/桌面/myWebserver/code/buffer/buffer.h \
  /usr/include/c++/11/cstring /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/bits/ios_base.h \

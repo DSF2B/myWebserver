@@ -92,7 +92,6 @@ myWebserver_EXTERNAL_OBJECTS =
 
 ../myWebserver: CMakeFiles/myWebserver.dir/code/main.cpp.o
 ../myWebserver: CMakeFiles/myWebserver.dir/build.make
-../myWebserver: ../lib/libwebserver_core.so
 ../myWebserver: CMakeFiles/myWebserver.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable ../myWebserver"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/myWebserver.dir/link.txt --verbose=$(VERBOSE)

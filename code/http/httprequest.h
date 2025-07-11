@@ -7,10 +7,10 @@
 #include <errno.h>     
 #include <mysql/mysql.h>  //mysql
 
-#include "../buffer/buffer.h"
-#include "../log/log.h"
-#include "../pool/sqlconnpool.h"
-#include "../pool/sqlconnRAII.h"
+#include "buffer.h"
+#include "log.h"
+#include "sqlconnpool.h"
+#include "sqlconnRAII.h"
 
 class HttpRequest {
 public:

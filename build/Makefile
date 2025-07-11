@@ -280,6 +280,7 @@ code/main.o: code/main.cpp.o
 
 # target to build an object file
 code/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/main.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/myWebserver.dir/build.make CMakeFiles/myWebserver.dir/code/main.cpp.o
 .PHONY : code/main.cpp.o
 
@@ -288,6 +289,7 @@ code/main.i: code/main.cpp.i
 
 # target to preprocess a source file
 code/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/main.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/myWebserver.dir/build.make CMakeFiles/myWebserver.dir/code/main.cpp.i
 .PHONY : code/main.cpp.i
 
@@ -296,6 +298,7 @@ code/main.s: code/main.cpp.s
 
 # target to generate assembly for a file
 code/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/main.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/myWebserver.dir/build.make CMakeFiles/myWebserver.dir/code/main.cpp.s
 .PHONY : code/main.cpp.s
 
@@ -346,6 +349,30 @@ code/server/epoller.s: code/server/epoller.cpp.s
 code/server/epoller.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/server/epoller.cpp.s
 .PHONY : code/server/epoller.cpp.s
+
+code/server/subreactor.o: code/server/subreactor.cpp.o
+.PHONY : code/server/subreactor.o
+
+# target to build an object file
+code/server/subreactor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o
+.PHONY : code/server/subreactor.cpp.o
+
+code/server/subreactor.i: code/server/subreactor.cpp.i
+.PHONY : code/server/subreactor.i
+
+# target to preprocess a source file
+code/server/subreactor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.i
+.PHONY : code/server/subreactor.cpp.i
+
+code/server/subreactor.s: code/server/subreactor.cpp.s
+.PHONY : code/server/subreactor.s
+
+# target to generate assembly for a file
+code/server/subreactor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.s
+.PHONY : code/server/subreactor.cpp.s
 
 code/server/webserver.o: code/server/webserver.cpp.o
 .PHONY : code/server/webserver.o
@@ -454,6 +481,9 @@ help:
 	@echo "... code/server/epoller.o"
 	@echo "... code/server/epoller.i"
 	@echo "... code/server/epoller.s"
+	@echo "... code/server/subreactor.o"
+	@echo "... code/server/subreactor.i"
+	@echo "... code/server/subreactor.s"
 	@echo "... code/server/webserver.o"
 	@echo "... code/server/webserver.i"
 	@echo "... code/server/webserver.s"

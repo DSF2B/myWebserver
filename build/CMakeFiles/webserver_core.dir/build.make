@@ -139,10 +139,24 @@ CMakeFiles/webserver_core.dir/code/log/log.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserver_core.dir/code/log/log.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zilu/桌面/myWebserver/code/log/log.cpp -o CMakeFiles/webserver_core.dir/code/log/log.cpp.s
 
+CMakeFiles/webserver_core.dir/code/main.cpp.o: CMakeFiles/webserver_core.dir/flags.make
+CMakeFiles/webserver_core.dir/code/main.cpp.o: ../code/main.cpp
+CMakeFiles/webserver_core.dir/code/main.cpp.o: CMakeFiles/webserver_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/webserver_core.dir/code/main.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/webserver_core.dir/code/main.cpp.o -MF CMakeFiles/webserver_core.dir/code/main.cpp.o.d -o CMakeFiles/webserver_core.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp
+
+CMakeFiles/webserver_core.dir/code/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/webserver_core.dir/code/main.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zilu/桌面/myWebserver/code/main.cpp > CMakeFiles/webserver_core.dir/code/main.cpp.i
+
+CMakeFiles/webserver_core.dir/code/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserver_core.dir/code/main.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zilu/桌面/myWebserver/code/main.cpp -o CMakeFiles/webserver_core.dir/code/main.cpp.s
+
 CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o: CMakeFiles/webserver_core.dir/flags.make
 CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o: ../code/pool/sqlconnpool.cpp
 CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o: CMakeFiles/webserver_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o -MF CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o.d -o CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o -c /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp
 
 CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.s: cmake_force
 CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o: CMakeFiles/webserver_core.dir/flags.make
 CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o: ../code/server/epoller.cpp
 CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o: CMakeFiles/webserver_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o -MF CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o.d -o CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o -c /home/zilu/桌面/myWebserver/code/server/epoller.cpp
 
 CMakeFiles/webserver_core.dir/code/server/epoller.cpp.i: cmake_force
@@ -167,10 +181,24 @@ CMakeFiles/webserver_core.dir/code/server/epoller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserver_core.dir/code/server/epoller.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zilu/桌面/myWebserver/code/server/epoller.cpp -o CMakeFiles/webserver_core.dir/code/server/epoller.cpp.s
 
+CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o: CMakeFiles/webserver_core.dir/flags.make
+CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o: ../code/server/subreactor.cpp
+CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o: CMakeFiles/webserver_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o -MF CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o.d -o CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o -c /home/zilu/桌面/myWebserver/code/server/subreactor.cpp
+
+CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zilu/桌面/myWebserver/code/server/subreactor.cpp > CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.i
+
+CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zilu/桌面/myWebserver/code/server/subreactor.cpp -o CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.s
+
 CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o: CMakeFiles/webserver_core.dir/flags.make
 CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o: ../code/server/webserver.cpp
 CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o: CMakeFiles/webserver_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o -MF CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o.d -o CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o -c /home/zilu/桌面/myWebserver/code/server/webserver.cpp
 
 CMakeFiles/webserver_core.dir/code/server/webserver.cpp.i: cmake_force
@@ -184,7 +212,7 @@ CMakeFiles/webserver_core.dir/code/server/webserver.cpp.s: cmake_force
 CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: CMakeFiles/webserver_core.dir/flags.make
 CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: ../code/timer/heaptimer.cpp
 CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: CMakeFiles/webserver_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o -MF CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o.d -o CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o -c /home/zilu/桌面/myWebserver/code/timer/heaptimer.cpp
 
 CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.i: cmake_force
@@ -202,8 +230,10 @@ webserver_core_OBJECTS = \
 "CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o" \
 "CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o" \
 "CMakeFiles/webserver_core.dir/code/log/log.cpp.o" \
+"CMakeFiles/webserver_core.dir/code/main.cpp.o" \
 "CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o" \
 "CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o" \
+"CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o" \
 "CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o" \
 "CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o"
 
@@ -215,13 +245,15 @@ webserver_core_EXTERNAL_OBJECTS =
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/log/log.cpp.o
+../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/main.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o
+../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/build.make
 ../lib/libwebserver_core.so: CMakeFiles/webserver_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX shared library ../lib/libwebserver_core.so"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX shared library ../lib/libwebserver_core.so"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/webserver_core.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

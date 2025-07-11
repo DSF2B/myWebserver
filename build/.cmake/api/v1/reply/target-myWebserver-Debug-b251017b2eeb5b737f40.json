@@ -11,7 +11,8 @@
 		"commands" : 
 		[
 			"add_executable",
-			"link_directories",
+			"target_link_directories",
+			"target_link_libraries",
 			"include_directories"
 		],
 		"files" : 
@@ -32,11 +33,17 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 48,
+				"line" : 51,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
+				"file" : 0,
+				"line" : 55,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
 				"file" : 0,
 				"line" : 13,
 				"parent" : 0
@@ -58,27 +65,27 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/home/zilu/\u684c\u9762/myWebserver/code/buffer"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/home/zilu/\u684c\u9762/myWebserver/code/http"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/home/zilu/\u684c\u9762/myWebserver/code/log"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/home/zilu/\u684c\u9762/myWebserver/code/pool"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/home/zilu/\u684c\u9762/myWebserver/code/server"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/home/zilu/\u684c\u9762/myWebserver/code/timer"
 				}
 			],
@@ -95,13 +102,6 @@
 			[
 				0
 			]
-		}
-	],
-	"dependencies" : 
-	[
-		{
-			"backtrace" : 1,
-			"id" : "webserver_core::@6890427a1f51a3e7e1df"
 		}
 	],
 	"id" : "myWebserver::@6890427a1f51a3e7e1df",
@@ -127,20 +127,8 @@
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 1,
-				"fragment" : "../lib/libwebserver_core.so",
-				"role" : "libraries"
-			},
-			{
-				"fragment" : "-lrt",
-				"role" : "libraries"
-			},
-			{
-				"fragment" : "-lpthread",
-				"role" : "libraries"
-			},
-			{
-				"fragment" : "-lmysqlclient",
+				"backtrace" : 3,
+				"fragment" : "-lwebserver_core",
 				"role" : "libraries"
 			}
 		],

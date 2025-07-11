@@ -122,10 +122,11 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
  /usr/include/c++/11/bits/vector.tcc \
- /home/zilu/桌面/myWebserver/code/server/../log/log.h \
- /usr/include/c++/11/mutex /usr/include/c++/11/chrono \
- /usr/include/c++/11/ratio /usr/include/c++/11/cstdint \
- /usr/include/c++/11/limits /usr/include/c++/11/ctime /usr/include/time.h \
+ /home/zilu/桌面/myWebserver/code/server/subreactor.h \
+ /home/zilu/桌面/myWebserver/code/log/log.h /usr/include/c++/11/mutex \
+ /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
+ /usr/include/c++/11/cstdint /usr/include/c++/11/limits \
+ /usr/include/c++/11/ctime /usr/include/time.h \
  /usr/include/x86_64-linux-gnu/bits/time.h \
  /usr/include/x86_64-linux-gnu/bits/timex.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
@@ -195,7 +196,7 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
- /home/zilu/桌面/myWebserver/code/server/../log/blockqueue.h \
+ /home/zilu/桌面/myWebserver/code/log/blockqueue.h \
  /usr/include/c++/11/deque /usr/include/c++/11/bits/stl_deque.h \
  /usr/include/c++/11/bits/deque.tcc \
  /usr/include/c++/11/condition_variable \
@@ -203,7 +204,7 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/c++/11/bits/shared_ptr_base.h \
  /usr/include/c++/11/bits/allocated_ptr.h \
  /usr/include/c++/11/ext/concurrence.h \
- /home/zilu/桌面/myWebserver/code/server/../log/../buffer/buffer.h \
+ /home/zilu/桌面/myWebserver/code/buffer/buffer.h \
  /usr/include/c++/11/cstring /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/bits/ios_base.h \
@@ -225,7 +226,7 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/uio-ext.h /usr/include/c++/11/atomic \
  /usr/include/c++/11/bits/atomic_base.h \
  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
- /home/zilu/桌面/myWebserver/code/server/../timer/heaptimer.h \
+ /home/zilu/桌面/myWebserver/code/timer/heaptimer.h \
  /usr/include/c++/11/queue /usr/include/c++/11/bits/stl_heap.h \
  /usr/include/c++/11/bits/stl_queue.h /usr/include/c++/11/algorithm \
  /usr/include/c++/11/bits/stl_algo.h \
@@ -233,7 +234,7 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/c++/11/bits/stl_tempbuf.h \
  /usr/include/c++/11/bits/uniform_int_dist.h \
  /usr/include/c++/11/functional /usr/include/c++/11/bits/std_function.h \
- /home/zilu/桌面/myWebserver/code/server/../pool/sqlconnpool.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h \
  /usr/include/mysql/mysql.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
  /usr/include/mysql/field_types.h /usr/include/mysql/my_list.h \
@@ -245,11 +246,11 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/mysql/mysql_version.h /usr/include/mysql/mysql_time.h \
  /usr/include/mysql/errmsg.h /usr/include/semaphore.h \
  /usr/include/x86_64-linux-gnu/bits/semaphore.h \
- /home/zilu/桌面/myWebserver/code/server/../pool/threadpool.h \
- /home/zilu/桌面/myWebserver/code/server/../pool/sqlconnRAII.h \
- /home/zilu/桌面/myWebserver/code/server/../pool/sqlconnpool.h \
- /home/zilu/桌面/myWebserver/code/server/../http/httpconn.h \
- /home/zilu/桌面/myWebserver/code/server/../http/httprequest.h \
+ /home/zilu/桌面/myWebserver/code/pool/threadpool.h \
+ /home/zilu/桌面/myWebserver/code/http/httpconn.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnRAII.h \
+ /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h \
+ /home/zilu/桌面/myWebserver/code/http/httprequest.h \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h /usr/include/c++/11/regex \
  /usr/include/c++/11/bitset /usr/include/c++/11/iterator \
@@ -279,8 +280,7 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: \
  /usr/include/c++/11/bits/regex.h /usr/include/c++/11/bits/regex.tcc \
  /usr/include/c++/11/bits/regex_executor.h \
  /usr/include/c++/11/bits/regex_executor.tcc \
- /home/zilu/桌面/myWebserver/code/server/../http/../pool/sqlconnpool.h \
- /home/zilu/桌面/myWebserver/code/server/../http/httpresponse.h \
+ /home/zilu/桌面/myWebserver/code/http/httpresponse.h \
  /usr/include/x86_64-linux-gnu/sys/mman.h \
  /usr/include/x86_64-linux-gnu/bits/mman.h \
  /usr/include/x86_64-linux-gnu/bits/mman-map-flags-generic.h \

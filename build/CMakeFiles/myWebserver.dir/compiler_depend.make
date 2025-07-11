@@ -142,6 +142,7 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
   /usr/include/c++/11/bits/stl_vector.h \
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
+  ../code/server/subreactor.h \
   ../code/log/log.h \
   /usr/include/c++/11/mutex \
   /usr/include/c++/11/chrono \
@@ -308,9 +309,9 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
   /usr/include/semaphore.h \
   /usr/include/x86_64-linux-gnu/bits/semaphore.h \
   ../code/pool/threadpool.h \
+  ../code/http/httpconn.h \
   ../code/pool/sqlconnRAII.h \
   ../code/pool/sqlconnpool.h \
-  ../code/http/httpconn.h \
   ../code/http/httprequest.h \
   /usr/include/c++/11/unordered_set \
   /usr/include/c++/11/bits/unordered_set.h \
@@ -352,7 +353,6 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
   /usr/include/c++/11/bits/regex.tcc \
   /usr/include/c++/11/bits/regex_executor.h \
   /usr/include/c++/11/bits/regex_executor.tcc \
-  ../code/pool/sqlconnpool.h \
   ../code/http/httpresponse.h \
   /usr/include/x86_64-linux-gnu/sys/mman.h \
   /usr/include/x86_64-linux-gnu/bits/mman.h \
@@ -511,8 +511,6 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
 
-/usr/include/x86_64-linux-gnu/bits/socket_type.h:
-
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 
 /usr/include/strings.h:
@@ -628,6 +626,10 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
 /usr/include/x86_64-linux-gnu/sys/stat.h:
+
+/usr/include/c++/11/bits/locale_classes.tcc:
+
+../code/main.cpp:
 
 /usr/include/c++/11/unordered_map:
 
@@ -841,6 +843,14 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
 
 /usr/include/c++/11/system_error:
 
+/usr/include/x86_64-linux-gnu/bits/socket_type.h:
+
+../code/server/subreactor.h:
+
+/usr/include/c++/11/bits/stl_heap.h:
+
+/usr/include/c++/11/bits/std_abs.h:
+
 /usr/include/x86_64-linux-gnu/bits/endian.h:
 
 ../code/log/log.h:
@@ -997,10 +1007,6 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
 
 /usr/include/alloca.h:
 
-/usr/include/c++/11/bits/stl_heap.h:
-
-/usr/include/c++/11/bits/std_abs.h:
-
 /usr/include/stdio.h:
 
 /usr/include/c++/11/ratio:
@@ -1068,7 +1074,3 @@ CMakeFiles/myWebserver.dir/code/main.cpp.o: ../code/main.cpp \
 ../code/buffer/buffer.h:
 
 /usr/include/c++/11/bits/ios_base.h:
-
-../code/main.cpp:
-
-/usr/include/c++/11/bits/locale_classes.tcc:
