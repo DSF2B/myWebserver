@@ -128,7 +128,7 @@ bool WebServer::InitSocket_(){
         return false;
     }
 
-    ret=listen(listenFd_,4096);
+    ret=listen(listenFd_,512);
     if(ret < 0) {
         LOG_ERROR("Listen port:%d error!", port_);
         close(listenFd_);
