@@ -45,7 +45,31 @@ ssize_t HttpConn::read(int* saveErrno){
     }while(isET);
     return len;
 }
+// ssize_t HttpConn::read(int* saveErrno) {
+//     ssize_t total_len = 0;  // 累积读取的总字节数
+//     ssize_t len = 0;        // 单次读取的字节数
 
+//     do {
+//         len = readBuff_.ReadFd(fd_, saveErrno);
+        
+//         // 处理读取结果
+//         if (len < 0) {
+//             if (errno == EAGAIN || errno == EWOULDBLOCK) {
+//                 break;  // ET模式：内核缓冲区空，正常退出
+//             } else {
+//                 *saveErrno = errno; // 记录非临时性错误
+//                 return -1;
+//             }
+//         } else if (len == 0) {
+//             *saveErrno = ECONNRESET; // 对端关闭连接
+//             return -1;
+//         }
+        
+//         total_len += len; // 累积有效数据长度
+//     } while (isET);  // ET模式循环读取，LT模式仅读一次
+
+//     return total_len; // 返回实际读取的总字节数
+// }
 ssize_t HttpConn::write(int* saveErrno){
     ssize_t len=-1;
     do{

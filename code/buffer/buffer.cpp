@@ -4,7 +4,8 @@ Buffer::Buffer(int initBuffSize) : buffer_(initBuffSize), readPos_(0), writePos_
 
 size_t Buffer::WritableBytes() const{
     return buffer_.size() - writePos_;
-} 
+}
+
 size_t Buffer::ReadableBytes() const{
     return writePos_-readPos_;
 }

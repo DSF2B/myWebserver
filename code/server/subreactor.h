@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>  // 定义 TCP_NODELAY
+
 #include <arpa/inet.h>
 
 #include "epoller.h"

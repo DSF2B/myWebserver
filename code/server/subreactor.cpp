@@ -57,6 +57,8 @@ void SubReactor::AddClient(int fd, uint32_t event,sockaddr_in addr)  {
     if(timeoutMS_ >0){
         timer_->add(fd,timeoutMS_,std::bind(&SubReactor::CloseConn_,this, &users_[fd]));
     }
+    //   int opt = 1;
+    // setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)); // 禁用 Nagle 算法
     SetFdNonblock(fd);
     epoller_->AddFd(fd, event); // ET边缘触发模式
     LOG_INFO("Client[%d] in!", users_[fd].GetFd());

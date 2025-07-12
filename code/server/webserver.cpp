@@ -191,7 +191,9 @@ void WebServer::DealListen_(){
 void WebServer::AddClient_(int fd, sockaddr_in addr){
     assert(fd>0);
     // 轮询选择一个子Reactor
-    int subReactorIdx = fd % subReactors_.size();
+    // int subReactorIdx = fd % subReactors_.size();
+    int subReactorIdx = rand() % subReactors_.size();  // 使用随机数生成器
+
     auto& subReactor = subReactors_[subReactorIdx];
     subReactor->AddClient(fd, EPOLLIN | connEvent_, addr);//修改subreactor，需要锁
 }
