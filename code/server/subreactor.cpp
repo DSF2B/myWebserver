@@ -7,20 +7,17 @@ isRunning_(false),
 openThreadPool_(openThreadPool),
 timer_(std::make_unique<HeapTimer>()),
 epoller_(std::make_unique<Epoller>()),
-threadpool_(threadpool)
+threadpool_(threadpool),
+closePool_(std::make_unique<ThreadPool>(1))
 {
     conn_queue_.resize(queue_capacity_);
     head_.store(0, std::memory_order_relaxed);
     tail_.store(0, std::memory_order_relaxed);
-
     // 创建eventfd并设置为非阻塞
     notify_fd_ = eventfd(0, EFD_NONBLOCK);
     SetFdNonblock(notify_fd_); // 复用已有的SetFdNonblock方法
-
     // 注册event_fd到epoller_，监听读事件（边缘触发）
-    notify_event_.events = EPOLLIN | EPOLLET;
-    notify_event_.data.fd = notify_fd_;
-    epoller_->AddFd(notify_fd_, &notify_event_);
+    epoller_->AddFd(notify_fd_, EPOLLIN | EPOLLET);
 }
 
 SubReactor::~SubReactor(){
@@ -37,43 +34,62 @@ void SubReactor::Stop() {
     if (thread_.joinable()) thread_.join();
 }
 void SubReactor::Loop() {
-    int timeMS = -1;  /* epoll wait timeout == -1 无事件将阻塞 */
+    int timeMS =-1;
     while (isRunning_) {
-        if(timeoutMS_ > 0) {
-            timeMS = timer_->GetNextTick();
+        if(timeoutMS_ > 0){
+            timeMS=timer_->GetNextTick();
         }
+        // if(timeMS<100)timeMS=100;
         int eventCnt = epoller_->Wait(timeMS);//当接收缓冲区有数据或发送缓冲区有空间时唤醒
+        // if (eventCnt == 0 && batch_count_ > 0) {
+        //     //闲时快处理
+        //     HandleQueueNotification();
+        //     ProcessPendingFds();
+        //     continue;
+        // }
         for (int i = 0; i < eventCnt; ++i) {
             int fd = epoller_->GetEventFd(i);
             uint32_t events = epoller_->GetEvents(i);
+            if (fd == notify_fd_) { 
+                if (events & EPOLLIN) {
+                    //conn_queue积累够一定数量再通知epoll
+                    // 读取eventfd并处理队列
+                    HandleQueueNotification(); 
+                }else if (events & (EPOLLRDHUP | EPOLLERR)) { // 处理eventfd异常
+                    close(notify_fd_);
 
-            auto it = users_.find(fd);
-            if (it == users_.end()) continue; // 连接已关闭
-            if (events & EPOLLIN) {
-                if (openThreadPool_) {
-                    ThreadPoolDealRead_(&it->second);  // 线程池处理业务
-                }else{
-                    OnRead_(&it->second);
+                    notify_fd_ = eventfd(0, EFD_NONBLOCK);
+                    epoller_->AddFd(notify_fd_, EPOLLIN | EPOLLET);
                 }
             }
-            else if(events & EPOLLOUT){
-                OnWrite_(&it->second);
-            } 
-            else if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
-                CloseConn_(&it->second);  // 连接关闭事件直接处理
-            }
-            else if (fd == notify_fd_ && (events & EPOLLIN)) {
-                HandleQueueNotification(); // 读取eventfd并处理队列
+            else{
+                auto it = users_.find(fd);
+                if (it == users_.end()) continue; // 连接已关闭
+                if (events & EPOLLIN) {
+                    if (openThreadPool_) {
+                        ThreadPoolDealRead_(&it->second);  // 线程池处理业务
+                    }else{
+                        OnRead_(&it->second);
+                    }
+                }
+                else if(events & EPOLLOUT){
+                    OnWrite_(&it->second);
+                } 
+                else if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+                    CloseConn_(&it->second);  // 连接关闭事件直接处理
+                }
             }
         }
-        ProcessPendingFds();
-    } 
+        if(pending_fds_.size() >= queue_batch_size_) {
+            // pending_fds_全部取出再添加
+            ProcessPendingFds();
+        }
+    }
 }
 
 void SubReactor::HandleQueueNotification() {
     uint64_t value;
     read(notify_fd_, &value, sizeof(value)); // 清空eventfd
-    
     // 批量转移队列数据（减少CAS次数）
     size_t current_head = head_.load(std::memory_order_relaxed);
     while (current_head != tail_.load(std::memory_order_acquire)) {
@@ -84,11 +100,20 @@ void SubReactor::HandleQueueNotification() {
 }
 
 void SubReactor::ProcessPendingFds() {
-    for (int fd : pending_fds_) {
+    for (auto it = pending_fds_.begin(); it != pending_fds_.end();) {
+        int fd = *it;
+        if (fcntl(fd, F_GETFD) == -1 && errno == EBADF) { // 检查 fd 有效性
+            close(fd);
+            it = pending_fds_.erase(it);
+            continue;
+        }
+
         sockaddr_in addr;
         socklen_t len = sizeof(addr);
-        getpeername(fd, (sockaddr*)&addr, &len);  // 获取客户端地址
-        AddClient(fd, EPOLLIN | EPOLLET, addr);   // 调用原有注册逻辑
+        if (getpeername(fd, (sockaddr*)&addr, &len) == 0) {
+            AddClient(fd, EPOLLIN | EPOLLET, addr);
+        }  // 获取客户端地址
+        ++it;
     }
     pending_fds_.clear();
 }
@@ -115,8 +140,12 @@ bool SubReactor::PushClient(int fd, uint32_t event,sockaddr_in addr){
     conn_queue_[current_tail] = fd;
     tail_.store(next_tail, std::memory_order_release);
     // 写入eventfd通知SubReactor
-    uint64_t value = 1;
-    write(notify_fd_, &value, sizeof(value));
+    // 每积累queue_batch_size_个事件再通知
+    batch_count_++;
+    // if (batch_count_ >= queue_batch_size_) {
+        uint64_t value = 1;
+        write(notify_fd_, &value, sizeof(value));
+    // }
     return true;
 }
 
@@ -171,7 +200,13 @@ void SubReactor::CloseConn_(HttpConn* client){
     assert(client);
     LOG_INFO("Client[%d] quit!", client->GetFd());
     epoller_->DelFd(client->GetFd());
-    client->Close();
+    // client->Close();
+    // closePool_->AddTask([client] {
+    //     client->Close(); // 异步执行耗时操作
+    // });
+    threadpool_->AddTask([client] {
+        client->Close(); // 异步执行耗时操作
+    });
 }
 void SubReactor::OnProcess(HttpConn* client){
     if(client->process()){

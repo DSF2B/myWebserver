@@ -1547,6 +1547,8 @@ CMakeFiles/webserver_core.dir/code/main.cpp.o: ../code/main.cpp \
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
   ../code/server/subreactor.h \
+  /usr/include/x86_64-linux-gnu/sys/eventfd.h \
+  /usr/include/x86_64-linux-gnu/bits/eventfd.h \
   /usr/include/netinet/tcp.h \
   ../code/log/log.h \
   /usr/include/c++/11/mutex \
@@ -2270,14 +2272,16 @@ CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o: ../code/server/subre
   /usr/include/x86_64-linux-gnu/asm/sockios.h \
   /usr/include/asm-generic/sockios.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
-  /usr/include/netinet/in.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
-  /usr/include/x86_64-linux-gnu/bits/in.h \
-  /usr/include/netinet/tcp.h \
+  /usr/include/x86_64-linux-gnu/sys/eventfd.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h \
   /usr/include/stdint.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  /usr/include/x86_64-linux-gnu/bits/eventfd.h \
+  /usr/include/netinet/in.h \
+  /usr/include/x86_64-linux-gnu/bits/in.h \
+  /usr/include/netinet/tcp.h \
   /usr/include/arpa/inet.h \
   ../code/server/epoller.h \
   /usr/include/x86_64-linux-gnu/sys/epoll.h \
@@ -2646,6 +2650,8 @@ CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o: ../code/server/webser
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
   ../code/server/subreactor.h \
+  /usr/include/x86_64-linux-gnu/sys/eventfd.h \
+  /usr/include/x86_64-linux-gnu/bits/eventfd.h \
   /usr/include/netinet/tcp.h \
   ../code/log/log.h \
   /usr/include/c++/11/mutex \
@@ -3150,6 +3156,10 @@ CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o: ../code/timer/heaptime
 ../code/pool/threadpool.h:
 
 ../code/timer/heaptimer.h:
+
+/usr/include/x86_64-linux-gnu/bits/eventfd.h:
+
+/usr/include/x86_64-linux-gnu/sys/eventfd.h:
 
 ../code/server/epoller.h:
 

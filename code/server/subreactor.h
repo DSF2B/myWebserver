@@ -5,9 +5,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <sys/socket.h>
+#include <sys/eventfd.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>  // 定义 TCP_NODELAY
-
 #include <arpa/inet.h>
 
 #include "epoller.h"
@@ -41,6 +41,7 @@ private:
     //lockqueue
     void HandleQueueNotification();
     void ProcessPendingFds();
+    void AddClient(int fd, uint32_t event,sockaddr_in addr);
 
 private:
     int connEvent_;
@@ -60,13 +61,11 @@ private:
     size_t queue_capacity_ = 1024;               // 队列容量（建议2的幂）
     // 事件通知通道
     int notify_fd_;                              // 通过eventfd创建
-    struct epoll_event notify_event_;            // 关联到epoller_
     // 批量处理缓冲区
     std::vector<int> pending_fds_;              // 暂存从队列取出的fd
-    struct newClient{
-        int fd;
-        uint32_t event;
-        sockaddr_in addr;
-    };
+    std::atomic<size_t> batch_count_{0};
+    ssize_t queue_batch_size_=32;
+    //关闭池
+    std::unique_ptr<ThreadPool> closePool_; // 线程池指针
 
 };

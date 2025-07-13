@@ -1,19 +1,3 @@
-# Total 
-
-尽量用make_shared代替new去配合shared_ptr使用，因为如果通过new再传递给shared_ptr，内存是不连续的，会造成内存碎片化
-
-    std::chrono::high_resolution_clock
-    duration（一段时间）
-    time_point（时间点）
-一般获取时间点是通过clock时钟获得的，一共有3个：
-    ①、high_resolution_clock
-    ②、system_clock
-    ③、steady_clock
-
-* high_resolution_clock
-他有一个now()方法，可以获取当前时间。注意：std::chrono::high_resolution_clock返回的时间点是按秒为单位的。
-
-* std::chrono::milliseconds表示毫秒，可用于duration<>的模板类，举例：chrono::duration_cast<milliseconds>
 
 # buffer
 即每次send()不一定会发送完，没发完的数据要用一个容器进行接收，所以必须要实现应用层缓冲区。
@@ -151,6 +135,7 @@ http取连接时从连接池消费连接。等待在信号量上，当信号量�
 * 需广播通知所有等待线程（如线程池任务分配）
 
 条件变量通常更轻量，但需配合锁；信号量涉及系统调用，开销较大
+
     //消费
     sem_wait(&semId_);
     std::lock_guard<std::mutex> locker(mtx_);
@@ -159,7 +144,6 @@ http取连接时从连接池消费连接。等待在信号量上，当信号量�
     std::lock_guard<std::mutex> locker(mtx_);
     connQue_.push(conn);
     sem_post(&semId_);
-
 # timer
 
 网络编程中除了处理IO事件之外，定时事件也同样不可或缺，如定期检测一个客户连接的活动状态、游戏中的技能冷却倒计时以及其他需要使用超时机制的功能。我们的服务器程序中往往需要处理众多的定时事件，因此有效的组织定时事件，使之能在预期时间内被触发且不影响服务器主要逻辑，对我们的服务器性能影响特别大。
@@ -235,6 +219,21 @@ httpconn类完成对fd的管理，完成读写。调用buffer类的读写完成L
     int* mmRet=(int*)mmap(0,mmFileStat_.st_size,PROT_READ,MAP_PRIVATE,srcFd,0);
     mmFile_=(char*)mmRet;
     //mmFile_即对应的文件地址，直接可以读取的
+# 这里可以考虑尝试sendFile()
+这里采用内存映射的零拷贝方式，避免把文件拷贝o到内核，再拷贝到用户空间，再拷贝到内核，再拷贝到网卡四次拷贝。
+内存映射mmap允许程序直接在用户态中访问内核空间中的数据，这样能避免一次无意义的 Copy，建立共享映射后，就不需要从内核缓冲区拷贝到用户缓冲区了，这就避免了一次拷贝了。
+
+sendfile（两次上下文切换，最少两次数据拷贝）sendfile() 系统调用在两个文件描述符之间直接传递数据（完全在内核中操作），从而避免了数据在内核缓冲区和用户缓冲区之间的拷贝，操作效率很高
+
+Linux 2.1 版本提供了 sendFile() 函数：数据根本不经过用户态，直接从内核缓冲区进入到 Socket Buffer 中；同时由于完全和用户态无关，就减少了一次上下文切换
+
+2.3、mmap 和 sendfile 的区别
+* 都是 Linux 内核提供，实现零拷贝的 API
+* mmap 适合小数据量读写，sendFile() 适合大文件传输
+* mmap 需要 4 次上下文切换，3 次数据拷贝
+* sendFile() 需要 3 次上下文切换，最少 2 次数据拷贝
+* sendFile() 可以利用DMA 方式，减少CPU 拷贝；mmap 则不能（必须从内存缓冲区拷贝到Socket 缓冲区）
+基于此基础，RocketMQ 使用了 mmap；Kafka 使用了 sendFile()
 
 # server
 server包括epoll方法封装的epoller类，主Reactor的webserver类和从Reactor的subreactor类。
@@ -329,7 +328,45 @@ loop循环：
 
 添加用户包括初始化httpconn、timer、epoller，注意顺序，先初始化资源再注册epoll监听。
 
-### 添加用户由主Reactor线程负责，读写由从Reactor负责，会发生资源竞争问题，需要对从Reactor的资源加锁或通过无锁结构实现。
-
-
 # 遇到的问题
+
+#### 添加用户由主Reactor线程负责，读写由从Reactor负责，会发生资源竞争问题，需要对从Reactor的资源加锁或通过无锁结构实现。
+这个问题最初是把程序改成多reactor后发生的，表现为timer->adjust中，还没有初始化timer就发生了查找timer,原因是添加timer和添加epoll顺序反了，先添加了epoll,此时从reactor就收到请求，要调整timer,而主reactor还没添加timer,发生了报错。
+
+调换顺序后，有时还是报错，发现仍热是主从reactor之间的资源竞争问题。最初考虑加锁方案，但这样就要对所有资源加锁，考虑到从reactor负责读写，需要高并发，因此采用无锁方式。
+
+因此考虑采用无锁队列实现主reactor向从reactor添加用户，避免了主从reactor之间的资源竞争。无锁队列采用循环链表实现，头尾使用atomic类型。
+
+    head_.load(std::memory_order_acquire)
+    禁止重排序​​：当前线程中所有​​后续的读写操作​​不会被重排到此操作之前。
+    ​​可见性保证​​：若其他线程通过 release 写入同一原子变量，则当前线程能​​看到该线程在 release 之前的所有修改​​（包括非原子变量）
+
+    tail_.store(next_tail, std::memory_order_release)
+    禁止重排序​​：当前线程中所有​​先前的读写操作​​不会被重排到此操作之后。
+    ​​可见性发布​​：此操作前的所有修改（包括非原子变量）对其他线程​​通过 acquire 读取同一原子变量时可见
+
+主Reactor通过PushClient向无锁队列中添加，添加完后通过epoll通知从reactor，每个从reactor拥有一个notify_fd_，如果监听到notify_fd_就执行把无锁队列中的内容拷贝出来，循环结束执行所有用户添加操作。
+
+#### closeConn_占比过大问题
+perf工具支持生成堆栈跟踪数据，利用perf进行性能测试：
+* 使用perf record命令记录程序运行时的堆栈数据。例如，下面的命令会以每秒99次的频率对整个系统进行采样，并生成包含调用堆栈数据的perf.data文件：
+
+        perf record -F 99 -g ./mywebserver
+* 将数据转换为火焰图格式
+使用perf script将perf.data文件中的数据导出为文本格式，以便后续处理：
+
+        perf script > out.perf
+这条命令会将perf.data中的采样数据转换为堆栈跟踪格式并保存为out.perf文件。
+
+* 生成火焰图：
+要生成火焰图，需要使用Flamegraph工具。假设你已经从GitHub下载并解压了Flamegraph工具包，可以通过以下命令将out.perf文件转换为火焰图：
+
+        ./stackcollapse-perf.pl out.perf > out.folded
+        ./flamegraph.pl out.folded > flamegraph.svg
+
+发现CloseConn_占比过大（23%），因此将这个函数放到系统线程池运行，占用降低到了11%。
+
+#### 超时计时器频繁触发，引发雪崩
+原本计时器的逻辑是每次循环计算最近超时的时间，然后设置epoll等待时间。最初超时时间设置60s,这样的话，等到60s后，超时计时器会频繁触发，通过设置最小超时时间和最少超时个数，比如把超时时间设置为第64个超时的计时器。
+
+#### log花时间太长
