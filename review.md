@@ -86,3 +86,8 @@ ET模式：即边沿触发模式，每一次事件到来只通知一次（针对
 他有一个now()方法，可以获取当前时间。注意：std::chrono::high_resolution_clock返回的时间点是按秒为单位的。
 
 * std::chrono::milliseconds表示毫秒，可用于duration<>的模板类，举例：chrono::duration_cast<milliseconds>
+
+
+**CMake基本操作**
+![cmake1](./cmake1.png)
+![cmake2](./cmake2.png)
