@@ -151,6 +151,8 @@ bool HttpConn::process(){
         response_.Init(srcDir,request_.path(),false,400);
     }
 
+    webdisk_.Init(request_,response_);
+    webdisk_.Handle();
 
     writeBuff_.RetrieveAll();
     response_.MakeResponse(writeBuff_);

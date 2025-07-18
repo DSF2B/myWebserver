@@ -109,6 +109,19 @@ size_t HttpResponse::FileLen() const{
 int HttpResponse::Code() const { 
     return code_; 
 }
+void HttpResponse::SetCode(const int& code){
+    code_=code;
+}
+void HttpResponse::SetHeader(const std::string& key, const std::string& value) {
+    headers_[key] = value;
+}
+void HttpResponse::SetBody(const std::string& body){
+    body_=body;
+}
+
+int HttpResponse::GetSocketFD() const { 
+    return fileFd_; 
+}
 // HTTP/1.1 200 OK
 void HttpResponse::AddStateLine_(Buffer &buff){
     std::string status;

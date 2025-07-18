@@ -23,7 +23,10 @@ public:
     size_t FileLen() const;
     void ErrorContent(Buffer& buff, std::string message);
     int Code() const;
-
+    void SetCode(const int& code);
+    void SetHeader(const std::string& key, const std::string& value);
+    void SetBody(const std::string& body);
+    int GetSocketFD() const;
 private:
     void AddStateLine_(Buffer &buff);
     void AddHeader_(Buffer &buff);
@@ -34,6 +37,9 @@ private:
 
     int code_;
     bool isKeepAlive_;
+
+    std::string body_;
+    std::unordered_map<std::string, std::string> headers_;
 
     std::string path_;
     std::string srcDir_;

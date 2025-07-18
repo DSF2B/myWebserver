@@ -41,8 +41,11 @@ public:
     std::string& path();
     std::string method() const;
     std::string version() const;
+    std::string GetHeader(const std::string& key) const;
+    std::string GetHeader(const char* key) const;
     std::string GetPost(const std::string& key) const;
     std::string GetPost(const char* key) const;
+    const std::string& GetBody() const;
     bool IsKeepAlive() const;
 
 private:

@@ -11,6 +11,7 @@
 #include "buffer.h"
 #include "httprequest.h"
 #include "httpresponse.h"
+#include "webdisk.h"
 
 class HttpConn {
 public:
@@ -61,4 +62,6 @@ private:
 
     HttpRequest request_;
     HttpResponse response_;
+
+    WebDisk webdisk_;
 };

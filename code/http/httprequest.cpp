@@ -98,7 +98,25 @@ std::string HttpRequest::GetPost(const char* key) const{
     }
     return it->second;
 }
-
+std::string HttpRequest::GetHeader(const std::string& key) const{
+    assert(key!="");
+    auto it=header_.find(key);
+    if(it == header_.end()){
+        return "";
+    }
+    return it->second;
+}
+std::string HttpRequest::GetHeader(const char* key) const{
+    assert(key!="");
+    auto it=header_.find(key);
+    if(it == header_.end()){
+        return "";
+    }
+    return it->second;
+}
+const std::string& HttpRequest::GetBody() const {
+    return body_; // 假设 body_ 已从 socket 读取并存储
+}
 void HttpRequest::ParsePath_(){
     if(path_ == "/"){
         path_="/index.html";
@@ -281,7 +299,6 @@ bool HttpRequest::parse(Buffer& buff){
     }
     LOG_DEBUG("[%s], [%s], [%s]",method_.c_str(),path_.c_str(),version_.c_str());
     return true;
- 
 }
 bool HttpRequest::UserVerify(const std::string& name, const std::string& pwd, bool isLogin){
     if(name == ""||pwd=="")return false;
