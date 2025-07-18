@@ -64,7 +64,7 @@ private:
     // 批量处理缓冲区
     std::vector<int> pending_fds_;              // 暂存从队列取出的fd
     std::atomic<size_t> batch_count_{0};
-    ssize_t queue_batch_size_=32;
+    ssize_t queue_batch_size_=1;
     //关闭池
     std::unique_ptr<ThreadPool> closePool_; // 线程池指针
 

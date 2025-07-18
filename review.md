@@ -91,3 +91,21 @@ ET模式：即边沿触发模式，每一次事件到来只通知一次（针对
 **CMake基本操作**
 ![cmake1](./cmake1.png)
 ![cmake2](./cmake2.png)
+
+**perf和火焰图基本操作**
+
+​|​命令​|​	​​功能​|​	​​示例​​|
+​|perf list​|	列出所有可监控事件（硬件/软件/跟踪点）​|	perf list 'sched:*'（过滤调度事件）
+​|perf stat​|	统计程序运行时性能指标​|	perf stat -e cycles,cache-misses ./program
+​|perf record​|	采集性能数据（生成 perf.data）​|	perf record -F 99 -g -p <PID>（采样+调用图）
+​|perf report​|	分析采集数据（交互式报告）​|	perf report -n --stdio（非交互模式）
+​|perf top​|	实时显示热点函数​|	sudo perf top -e cache-misses（监控缓存失效）
+
+生成火焰图（四步流程）​
+sudo perf record -F 99 -g -p <PID> -- sleep 30  # 对指定进程采样
+sudo perf script > out.perf
+stackcollapse-perf.pl out.perf > out.folded
+flamegraph.pl out.folded > flamegraph.svg
+
+
+## 改成sendFile后,QPS非常低

@@ -250,6 +250,7 @@ CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/semaphore.h \
  /home/zilu/桌面/myWebserver/code/pool/threadpool.h \
  /home/zilu/桌面/myWebserver/code/http/httpconn.h \
+ /usr/include/x86_64-linux-gnu/sys/sendfile.h \
  /home/zilu/桌面/myWebserver/code/pool/sqlconnRAII.h \
  /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.h \
  /home/zilu/桌面/myWebserver/code/http/httprequest.h \

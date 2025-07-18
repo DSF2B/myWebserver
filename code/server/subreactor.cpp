@@ -66,11 +66,12 @@ void SubReactor::Loop() {
                 auto it = users_.find(fd);
                 if (it == users_.end()) continue; // 连接已关闭
                 if (events & EPOLLIN) {
-                    if (openThreadPool_) {
-                        ThreadPoolDealRead_(&it->second);  // 线程池处理业务
-                    }else{
-                        OnRead_(&it->second);
-                    }
+                    // if (openThreadPool_) {
+                    //     ThreadPoolDealRead_(&it->second);  // 线程池处理业务
+                    // }else{
+                    //     OnRead_(&it->second);
+                    // }
+                    OnRead_(&it->second);
                 }
                 else if(events & EPOLLOUT){
                     OnWrite_(&it->second);
@@ -199,14 +200,18 @@ void SubReactor::ExtentTime_(HttpConn* client){
 void SubReactor::CloseConn_(HttpConn* client){
     assert(client);
     LOG_INFO("Client[%d] quit!", client->GetFd());
+
     epoller_->DelFd(client->GetFd());
     // client->Close();
     // closePool_->AddTask([client] {
     //     client->Close(); // 异步执行耗时操作
     // });
-    threadpool_->AddTask([client] {
-        client->Close(); // 异步执行耗时操作
-    });
+    users_.erase(client->GetFd());
+    client->Close();
+    // threadpool_->AddTask([client] {
+    //     client->Close(); // 异步执行耗时操作
+        
+    // });
 }
 void SubReactor::OnProcess(HttpConn* client){
     if(client->process()){

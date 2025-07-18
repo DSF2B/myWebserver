@@ -38,7 +38,8 @@ CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o: \
  /usr/include/x86_64-linux-gnu/sys/uio.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
- /usr/include/x86_64-linux-gnu/bits/uio-ext.h /usr/include/arpa/inet.h \
+ /usr/include/x86_64-linux-gnu/bits/uio-ext.h \
+ /usr/include/x86_64-linux-gnu/sys/sendfile.h /usr/include/arpa/inet.h \
  /usr/include/netinet/in.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
  /usr/include/x86_64-linux-gnu/sys/socket.h \

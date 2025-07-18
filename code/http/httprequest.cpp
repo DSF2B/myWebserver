@@ -274,6 +274,9 @@ bool HttpRequest::parse(Buffer& buff){
             }
         }
         if(lineEnd == buff.BeginWrite())break;//读到了写区，已经读完
+        if(lineEnd+2 - buff.Peek()> buff.ReadableBytes()){
+            std::cout<<"123"<<std::endl;
+        }
         buff.RetrieveUntil(lineEnd+2);//下一行
     }
     LOG_DEBUG("[%s], [%s], [%s]",method_.c_str(),path_.c_str(),version_.c_str());

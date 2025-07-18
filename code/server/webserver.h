@@ -64,5 +64,5 @@ private:
     //subreactor
     std::vector<std::unique_ptr<SubReactor>> subReactors_; 
     int subReactorNum_ = std::thread::hardware_concurrency(); // 子Reactor数=CPU核心数
-    // int subReactorNum_ = 6;
+    // int subReactorNum_ = 4;
 };

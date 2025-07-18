@@ -39,12 +39,16 @@ HttpResponse::HttpResponse(){
     isKeepAlive_=false;
     path_="";
     srcDir_="";
-    mmFile_=nullptr;
+    // mmFile_=nullptr;
+    fileFd_=-1;
     mmFileStat_={0};
 
 }
 HttpResponse::~HttpResponse(){
-    UnmapFile();
+    // UnmapFile();
+    if (fileFd_ != -1) {
+        close(fileFd_); // 析构时关闭文件
+    }
 }
 
 void HttpResponse::Init(const std::string& srcDir, std::string& path, bool isKeepAlive, int code){
@@ -54,10 +58,14 @@ void HttpResponse::Init(const std::string& srcDir, std::string& path, bool isKee
     isKeepAlive_=isKeepAlive;
     code_=code;
 
-    if(mmFile_){
-        UnmapFile();
+    // if(mmFile_){
+    //     UnmapFile();
+    // }
+    // mmFile_=nullptr;
+    if (fileFd_ != -1) {
+        close(fileFd_); // 析构时关闭文件
     }
-    mmFile_=nullptr;
+    fileFd_=-1;
     mmFileStat_={0};
 }
 void HttpResponse::MakeResponse(Buffer& buff){
@@ -77,14 +85,22 @@ void HttpResponse::MakeResponse(Buffer& buff){
     AddHeader_(buff);
     AddContent_(buff);
 }
-void HttpResponse::UnmapFile(){
-    if(mmFile_){
-        munmap(mmFile_,mmFileStat_.st_size);
-        mmFile_=nullptr;
+// void HttpResponse::UnmapFile(){
+//     if(mmFile_){
+//         munmap(mmFile_,mmFileStat_.st_size);
+//         mmFile_=nullptr;
+//     }
+// }
+void HttpResponse::CloseFd(){
+    if(fileFd_!=-1){
+        close(fileFd_);
     }
 }
-char* HttpResponse::File(){
-    return mmFile_;
+// char* HttpResponse::File(){
+//     return mmFile_;
+// }
+int HttpResponse::File(){
+    return fileFd_;
 }
 size_t HttpResponse::FileLen() const{
     return mmFileStat_.st_size;
@@ -125,19 +141,20 @@ void HttpResponse::AddHeader_(Buffer &buff){
 //       </body>
 // </html>
 void HttpResponse::AddContent_(Buffer &buff){
-    int srcFd=open((srcDir_+path_).data(),O_RDONLY);
-    if(srcFd<0){
-        ErrorContent(buff,"Fild NotFound");
-        return ;
-    }
-    LOG_DEBUG("file path: %s",(srcDir_+path_).data());
-    int* mmRet=(int*)mmap(0,mmFileStat_.st_size,PROT_READ,MAP_PRIVATE,srcFd,0);
-    if(*mmRet==-1){
+    fileFd_=open((srcDir_+path_).data(),O_RDONLY);
+    if(fileFd_<0){
         ErrorContent(buff,"File NotFound");
         return ;
+    }else {
+        fstat(fileFd_, &mmFileStat_);
     }
-    mmFile_=(char*)mmRet;
-    close(srcFd);
+    LOG_DEBUG("file path: %s",(srcDir_+path_).data());
+    // int* mmRet=(int*)mmap(0,mmFileStat_.st_size,PROT_READ,MAP_PRIVATE,srcFd,0);
+    // if(*mmRet==-1){
+    //     ErrorContent(buff,"File NotFound");
+    //     return ;
+    // }
+    // mmFile_=(char*)mmRet;
     buff.Append("Content-length: " + std::to_string(mmFileStat_.st_size) + "\r\n\r\n");
 }
 

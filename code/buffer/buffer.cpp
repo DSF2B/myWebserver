@@ -30,6 +30,9 @@ void Buffer::HasWritten(size_t len){
 }
 // 读取len长度，移动读下标
 void Buffer::Retrieve(size_t len){
+    if(len > ReadableBytes()){
+        std::cout<<"123"<<std::endl;
+    }
     assert(len <= ReadableBytes());
     readPos_ += len;
 }

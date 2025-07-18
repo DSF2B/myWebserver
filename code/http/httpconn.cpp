@@ -8,6 +8,7 @@ HttpConn::HttpConn(){
     fd_=-1;
     addr_={0};
     isClose_=true;
+    fileOffset_ = 0; // 新增：文件发送偏移量
 }
 
 HttpConn::~HttpConn(){
@@ -27,10 +28,11 @@ void HttpConn::init(int sockFd, const sockaddr_in& addr){
     LOG_INFO("Client[%d](%s:%d) in, userCount:%d",fd_,GetIP(),GetPort(),(int)userCount);
 }
 void HttpConn::Close(){
-    response_.UnmapFile();
+    // response_.UnmapFile();
     if(isClose_==false){
-        isClose_==true;
+        isClose_=true;
         userCount--;
+        response_.CloseFd();
         close(fd_);
         LOG_DEBUG("Client[%d](%s:%d) quit, userCount:%d",fd_,GetIP(),GetPort(),(int)userCount);
     }
@@ -45,60 +47,98 @@ ssize_t HttpConn::read(int* saveErrno){
     }while(isET);
     return len;
 }
-// ssize_t HttpConn::read(int* saveErrno) {
-//     ssize_t total_len = 0;  // 累积读取的总字节数
-//     ssize_t len = 0;        // 单次读取的字节数
 
-//     do {
-//         len = readBuff_.ReadFd(fd_, saveErrno);
-        
-//         // 处理读取结果
-//         if (len < 0) {
-//             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-//                 break;  // ET模式：内核缓冲区空，正常退出
-//             } else {
-//                 *saveErrno = errno; // 记录非临时性错误
-//                 return -1;
-//             }
-//         } else if (len == 0) {
-//             *saveErrno = ECONNRESET; // 对端关闭连接
-//             return -1;
+// ssize_t HttpConn::write(int* saveErrno){
+//     ssize_t len=-1;
+//     do{
+//         len=writev(fd_,iov_,iovCnt_);
+//         if(len<=0){
+//             *saveErrno = errno;
+//             break;
 //         }
-        
-//         total_len += len; // 累积有效数据长度
-//     } while (isET);  // ET模式循环读取，LT模式仅读一次
-
-//     return total_len; // 返回实际读取的总字节数
+//         if(iov_[0].iov_len + iov_[1].iov_len == 0){
+//             break;
+//         }else if(static_cast<size_t>(len) > iov_[0].iov_len){
+//             //写入长度超过第一个缓冲区
+//             iov_[1].iov_base=(uint8_t*)iov_[1].iov_base + (len-iov_[0].iov_len);
+//             iov_[1].iov_len -= (len - iov_[0].iov_len);
+//             if(iov_[0].iov_len){
+//                 //响应头已经发送完毕，释放writeBuff_
+//                 writeBuff_.RetrieveAll();
+//                 iov_[0].iov_len=0;
+//             }
+//         }else{
+//             //写入长度未超第一个缓冲区
+//             iov_[0].iov_base=(uint8_t*)iov_[0].iov_base + len;
+//             iov_[0].iov_len-=len;
+//             writeBuff_.Retrieve(len);
+//         }
+//     }while(isET || ToWriteBytes() > 10240);
+//     return len;
 // }
 ssize_t HttpConn::write(int* saveErrno){
-    ssize_t len=-1;
-    do{
-        len=writev(fd_,iov_,iovCnt_);
-        if(len<=0){
-            *saveErrno = errno;
-            break;
-        }
-        if(iov_[0].iov_len + iov_[1].iov_len == 0){
-            break;
-        }else if(static_cast<size_t>(len) > iov_[0].iov_len){
-            //写入长度超过第一个缓冲区
-            iov_[1].iov_base=(uint8_t*)iov_[1].iov_base + (len-iov_[0].iov_len);
-            iov_[1].iov_len -= (len - iov_[0].iov_len);
-            if(iov_[0].iov_len){
+    ssize_t totalToSent;
+    if(response_.File()!=-1){
+        totalToSent = static_cast<int>(iov_[0].iov_len+response_.FileLen() - fileOffset_);
+    }else{
+        totalToSent = static_cast<int>(iov_[0].iov_len);
+    }
+
+    if(iov_[0].iov_len>0){
+        do{
+            ssize_t len=writev(fd_,iov_,iovCnt_);
+            if(len==0){
+                break;
+            }
+            else if (len < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    break;
+                } else {
+                    *saveErrno = errno;
+                    return -1;
+                }
+            }
+            totalToSent-=len;
+            if(static_cast<size_t>(len) == iov_[0].iov_len){
                 //响应头已经发送完毕，释放writeBuff_
                 writeBuff_.RetrieveAll();
                 iov_[0].iov_len=0;
+                break;
             }
-        }else{
-            //写入长度未超第一个缓冲区
-            iov_[0].iov_base=(uint8_t*)iov_[0].iov_base + len;
-            iov_[0].iov_len-=len;
-            writeBuff_.Retrieve(len);
-        }
-    }while(isET || ToWriteBytes() > 10240);
-    return len;
-}
+            else if(static_cast<size_t>(len) < iov_[0].iov_len){
+                //写入长度未超第一个缓冲区
+                iov_[0].iov_base=(uint8_t*)iov_[0].iov_base + len;
+                iov_[0].iov_len-=len;
+                writeBuff_.Retrieve(len);
+            }
+        }while(isET || iov_[0].iov_len > 10240);
+    }
+    if(iov_[0].iov_len==0 && totalToSent > 0 && response_.File()!=-1){
+        //前一个已经发完才能才第二个
+        do{
+            ssize_t sent = sendfile(fd_, response_.File(), &fileOffset_, response_.FileLen() - fileOffset_);
+            if(sent==0){
+                break;
+            }
+            else if (sent < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    break; // 可写资源耗尽
+                } else {
+                    *saveErrno = errno;
+                    return -1;
+                }
+            }else{
+                totalToSent-=sent;
+                if(totalToSent==0)break;
+            }
+            
+        }while((isET || totalToSent > 10240));
+    }
+    if(totalToSent>0)*saveErrno = EAGAIN;
 
+    if(totalToSent>0)return -1;
+    else return 0;
+}
 bool HttpConn::process(){
     request_.Init();
     if(readBuff_.ReadableBytes()<=0){
@@ -111,23 +151,27 @@ bool HttpConn::process(){
         response_.Init(srcDir,request_.path(),false,400);
     }
 
+
+    writeBuff_.RetrieveAll();
     response_.MakeResponse(writeBuff_);
     iov_[0].iov_base=const_cast<char*>(writeBuff_.Peek());
     iov_[0].iov_len=writeBuff_.ReadableBytes();
     iovCnt_=1;
 
-    if(response_.FileLen()>0 && response_.File()){
-        //若有响应体
-        iov_[1].iov_base=response_.File();
-        iov_[1].iov_len=response_.FileLen();
-        iovCnt_=2;
-    }
+    fileOffset_=0;
+    // if(response_.FileLen()>0 && response_.File()){ 
+    //     //若有响应体
+    //     iov_[1].iov_base=response_.File();
+    //     iov_[1].iov_len=response_.FileLen();
+    //     iovCnt_=2;
+    // }
     LOG_DEBUG("filesize:%d, %d  to %d", response_.FileLen() , iovCnt_, ToWriteBytes());
     return true;
 }
 
 int HttpConn::ToWriteBytes() { 
-    return iov_[0].iov_len + iov_[1].iov_len; 
+    // return iov_[0].iov_len + iov_[1].iov_len; 
+    return static_cast<int>(iov_[0].iov_len +response_.FileLen() - fileOffset_);
 }
 
 bool HttpConn::IsKeepAlive() const {

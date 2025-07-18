@@ -1,6 +1,7 @@
 #pragma once
 #include <sys/types.h>
 #include <sys/uio.h>     // readv/writev
+#include <sys/sendfile.h> 
 #include <arpa/inet.h>   // sockaddr_in
 #include <stdlib.h>      // atoi()
 #include <errno.h>      
@@ -49,6 +50,8 @@ private:
     struct  sockaddr_in addr_;
 
     bool isClose_;
+
+    off_t fileOffset_; // 新增：文件发送偏移量
     
     int iovCnt_;
     struct iovec iov_[2];

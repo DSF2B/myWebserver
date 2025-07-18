@@ -16,8 +16,10 @@ public:
 
     void Init(const std::string& srcDir, std::string& path, bool isKeepAlive = false, int code = -1);
     void MakeResponse(Buffer& buff);
-    void UnmapFile();
-    char* File();
+    // void UnmapFile();
+    void CloseFd();
+    // char* File();
+    int File();
     size_t FileLen() const;
     void ErrorContent(Buffer& buff, std::string message);
     int Code() const;
@@ -36,7 +38,8 @@ private:
     std::string path_;
     std::string srcDir_;
     
-    char* mmFile_; 
+    // char* mmFile_; 
+    int fileFd_;
     struct stat mmFileStat_;
 
     static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
