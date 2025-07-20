@@ -1,67 +1,72 @@
 [
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/buffer/buffer.cpp.o -c /home/zilu/桌面/myWebserver/code/buffer/buffer.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/buffer/buffer.cpp.o -c /home/zilu/桌面/myWebserver/code/buffer/buffer.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/buffer/buffer.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o -c /home/zilu/桌面/myWebserver/code/http/httpconn.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o -c /home/zilu/桌面/myWebserver/code/http/httpconn.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/http/httpconn.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o -c /home/zilu/桌面/myWebserver/code/http/httprequest.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o -c /home/zilu/桌面/myWebserver/code/http/httprequest.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/http/httprequest.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o -c /home/zilu/桌面/myWebserver/code/http/httpresponse.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o -c /home/zilu/桌面/myWebserver/code/http/httpresponse.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/http/httpresponse.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/log/log.cpp.o -c /home/zilu/桌面/myWebserver/code/log/log.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.o -c /home/zilu/桌面/myWebserver/code/http/webdisk.cpp",
+  "file": "/home/zilu/桌面/myWebserver/code/http/webdisk.cpp"
+},
+{
+  "directory": "/home/zilu/桌面/myWebserver/build",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/log/log.cpp.o -c /home/zilu/桌面/myWebserver/code/log/log.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/log/log.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/main.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o -c /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o -c /home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o -c /home/zilu/桌面/myWebserver/code/server/epoller.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/server/epoller.cpp.o -c /home/zilu/桌面/myWebserver/code/server/epoller.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/server/epoller.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o -c /home/zilu/桌面/myWebserver/code/server/subreactor.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/server/subreactor.cpp.o -c /home/zilu/桌面/myWebserver/code/server/subreactor.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/server/subreactor.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o -c /home/zilu/桌面/myWebserver/code/server/webserver.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/server/webserver.cpp.o -c /home/zilu/桌面/myWebserver/code/server/webserver.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/server/webserver.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -std=gnu++14 -o CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o -c /home/zilu/桌面/myWebserver/code/timer/heaptimer.cpp",
+  "command": "/usr/bin/g++ -Dwebserver_core_EXPORTS -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -fPIC -o CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.o -c /home/zilu/桌面/myWebserver/code/timer/heaptimer.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/timer/heaptimer.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++  -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -std=gnu++14 -o CMakeFiles/myWebserver.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp",
+  "command": "/usr/bin/g++  -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -o CMakeFiles/myWebserver.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/main.cpp"
 },
 {
   "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++  -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -std=gnu++14 -o CMakeFiles/testLog.dir/test/test.cpp.o -c /home/zilu/桌面/myWebserver/test/test.cpp",
+  "command": "/usr/bin/g++  -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -o CMakeFiles/testLog.dir/test/test.cpp.o -c /home/zilu/桌面/myWebserver/test/test.cpp",
   "file": "/home/zilu/桌面/myWebserver/test/test.cpp"
 }
 ]

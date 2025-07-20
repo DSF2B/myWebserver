@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o.d"
   "CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o"
   "CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o.d"
+  "CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.o"
+  "CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.o.d"
   "CMakeFiles/webserver_core.dir/code/log/log.cpp.o"
   "CMakeFiles/webserver_core.dir/code/log/log.cpp.o.d"
   "CMakeFiles/webserver_core.dir/code/main.cpp.o"

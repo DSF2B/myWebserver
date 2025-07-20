@@ -6,5 +6,5 @@ CXX_DEFINES = -Dwebserver_core_EXPORTS
 
 CXX_INCLUDES = -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer
 
-CXX_FLAGS = -g -fPIC -std=gnu++14
+CXX_FLAGS = -g -fPIC
 

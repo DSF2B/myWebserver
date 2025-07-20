@@ -1,0 +1,60 @@
+2025-07-19 231935.567569[Info] : ========== Server init ==========
+2025-07-19 231935.567611[Info] : Port:1316, OpenLinger: false
+2025-07-19 231935.567615[Info] : Listen Mode: ET, OpenConn Mode: ET
+2025-07-19 231935.567616[Info] : LogSys level: 1
+2025-07-19 231935.567617[Info] : srcDir: /home/zilu/桌面/myWebserver/resources/
+2025-07-19 231935.567618[Info] : SqlConnPool num: 12, ThreadPool num: 6
+2025-07-19 231935.568736[Info] : ========== Server start ==========
+2025-07-19 231939.018506[Info] : Client[27](192.168.6.1:59632) in, userCount:2
+2025-07-19 231939.018506[Info] : Client[26](192.168.6.1:59376) in, userCount:2
+2025-07-19 231939.019043[Info] : Client[26] in!
+2025-07-19 231952.379114[Info] : ========== Server init ==========
+2025-07-19 231952.379150[Info] : Port:1316, OpenLinger: false
+2025-07-19 231952.379153[Info] : Listen Mode: ET, OpenConn Mode: ET
+2025-07-19 231952.379155[Info] : LogSys level: 1
+2025-07-19 231952.379156[Info] : srcDir: /home/zilu/桌面/myWebserver/resources/
+2025-07-19 231952.379157[Info] : SqlConnPool num: 12, ThreadPool num: 6
+2025-07-19 231952.382954[Info] : ========== Server start ==========
+2025-07-19 231955.944034[Info] : Client[27](192.168.6.1:4081) in, userCount:1
+2025-07-19 231955.944146[Info] : Client[26](192.168.6.1:3825) in, userCount:2
+2025-07-19 231955.944188[Info] : Client[27] in!
+2025-07-19 232115.103561[Info] : ========== Server init ==========
+2025-07-19 232115.103590[Info] : Port:1316, OpenLinger: false
+2025-07-19 232115.103593[Info] : Listen Mode: ET, OpenConn Mode: ET
+2025-07-19 232115.103594[Info] : LogSys level: 1
+2025-07-19 232115.103595[Info] : srcDir: /home/zilu/桌面/myWebserver/resources/
+2025-07-19 232115.103597[Info] : SqlConnPool num: 12, ThreadPool num: 6
+2025-07-19 232115.106539[Info] : ========== Server start ==========
+2025-07-19 232115.892242[Info] : Client[27](192.168.6.1:9457) in, userCount:2
+2025-07-19 232452.753587[Info] : ========== Server init ==========
+2025-07-19 232452.753630[Info] : Port:1316, OpenLinger: false
+2025-07-19 232452.753634[Info] : Listen Mode: ET, OpenConn Mode: ET
+2025-07-19 232452.753724[Info] : LogSys level: 1
+2025-07-19 232452.753733[Info] : srcDir: /home/zilu/桌面/myWebserver/resources/
+2025-07-19 232452.753750[Info] : SqlConnPool num: 12, ThreadPool num: 6
+2025-07-19 232452.756477[Info] : ========== Server start ==========
+2025-07-19 232458.074517[Info] : Client[26](192.168.6.1:4038) in, userCount:1
+2025-07-19 232458.074669[Info] : Client[26] in!
+2025-07-19 232458.077294[Info] : Client[27](192.168.6.1:4294) in, userCount:2
+2025-07-19 232458.077365[Info] : Client[27] in!
+2025-07-19 232536.660958[Info] : ========== Server init ==========
+2025-07-19 232536.660998[Info] : Port:1316, OpenLinger: false
+2025-07-19 232536.661063[Info] : Listen Mode: ET, OpenConn Mode: ET
+2025-07-19 232536.661066[Info] : LogSys level: 1
+2025-07-19 232536.661069[Info] : srcDir: /home/zilu/桌面/myWebserver/resources/
+2025-07-19 232536.661082[Info] : SqlConnPool num: 12, ThreadPool num: 6
+2025-07-19 232536.664090[Info] : ========== Server start ==========
+2025-07-19 232539.433706[Info] : Client[26](192.168.6.1:9414) in, userCount:2
+2025-07-19 232539.433707[Info] : Client[27](192.168.6.1:9670) in, userCount:2
+2025-07-19 232539.433840[Info] : Client[27] in!
+2025-07-19 232710.926650[Info] : ========== Server init ==========
+2025-07-19 232710.926679[Info] : Port:1316, OpenLinger: false
+2025-07-19 232710.926682[Info] : Listen Mode: ET, OpenConn Mode: ET
+2025-07-19 232710.926683[Info] : LogSys level: 1
+2025-07-19 232710.926685[Info] : srcDir: /home/zilu/桌面/myWebserver/resources/
+2025-07-19 232710.926686[Info] : SqlConnPool num: 12, ThreadPool num: 6
+2025-07-19 232710.930746[Info] : ========== Server start ==========
+2025-07-19 232711.150135[Info] : Client[26](192.168.6.1:56540) in, userCount:1
+2025-07-19 232711.150256[Info] : Client[26] in!
+2025-07-19 232716.394485[Info] : Client[27](192.168.6.1:56796) in, userCount:2
+2025-07-19 232716.394634[Info] : Client[27] in!

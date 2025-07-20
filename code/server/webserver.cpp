@@ -10,7 +10,7 @@ WebServer::WebServer(int port, int trigMode, int timeoutMS, bool OptLinger,
     //设置服务器参数　＋　初始化定时器／线程池／反应堆／连接队列
     srcDir_=getcwd(nullptr,256);
     assert(srcDir_);
-    std::strncat(srcDir_, "/resources/", 16);
+    std::strncat(srcDir_, "/resources", 16);
     HttpConn::userCount=0;
     HttpConn::srcDir=srcDir_;
 

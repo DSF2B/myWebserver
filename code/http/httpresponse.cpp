@@ -38,10 +38,10 @@ HttpResponse::HttpResponse(){
     code_=-1;
     isKeepAlive_=false;
     path_="";
-    srcDir_="";
     // mmFile_=nullptr;
     fileFd_=-1;
     mmFileStat_={0};
+    userFileSize_=0;
 
 }
 HttpResponse::~HttpResponse(){
@@ -51,13 +51,9 @@ HttpResponse::~HttpResponse(){
     }
 }
 
-void HttpResponse::Init(const std::string& srcDir, std::string& path, bool isKeepAlive, int code){
-    assert(srcDir!="");
-    srcDir_=srcDir;
-    path_=path;
+void HttpResponse::Init(bool isKeepAlive, int code){
     isKeepAlive_=isKeepAlive;
     code_=code;
-
     // if(mmFile_){
     //     UnmapFile();
     // }
@@ -69,14 +65,29 @@ void HttpResponse::Init(const std::string& srcDir, std::string& path, bool isKee
     mmFileStat_={0};
 }
 void HttpResponse::MakeResponse(Buffer& buff){
-    if(stat((srcDir_+path_).data(), &mmFileStat_)<0 || S_ISDIR(mmFileStat_.st_mode)){
-        //通过路径 srcDir_ + path_ 获取文件元信息（如类型、权限、大小等），存储到结构体 mmFileStat_ 中。若文件不存在或路径无效，stat返回负值（通常为-1）
-        // 文件不存在或目标为目录
-        code_=404;
-    }else if(!(mmFileStat_.st_mode & S_IROTH)){
-        //// 文件不可读（权限不足）
-        code_=403;
-    }else if(code_ == -1){
+    // 根据发送类型选择要检查的文件路径
+    std::string fileToCheck;
+    bool needFileCheck = false;
+    
+    if (sendFileType_ == SendFileType::StaticWebPage && !path_.empty()) {
+        fileToCheck = path_;
+        needFileCheck = true;
+    } else if (sendFileType_ == SendFileType::UserData && !userFilePath_.empty()) {
+        fileToCheck = userFilePath_;
+        needFileCheck = true;
+    }
+    
+    // 只对需要文件的类型进行文件检查
+    if (needFileCheck) {
+        if(stat(fileToCheck.data(), &mmFileStat_)<0 || S_ISDIR(mmFileStat_.st_mode)){
+            code_=404;
+        }else if(!(mmFileStat_.st_mode & S_IROTH)){
+            code_=403;
+        }else if(code_ == -1){
+            code_=200;
+        }
+    } else if(code_ == -1){
+        // 动态内容或无需文件检查的情况
         code_=200;
     }
 
@@ -109,15 +120,53 @@ size_t HttpResponse::FileLen() const{
 int HttpResponse::Code() const { 
     return code_; 
 }
+SendFileType HttpResponse::sendFileType(){
+    return sendFileType_;
+}
+std::string& HttpResponse::body(){
+    return body_;
+}
 void HttpResponse::SetCode(const int& code){
     code_=code;
 }
+
 void HttpResponse::SetHeader(const std::string& key, const std::string& value) {
     headers_[key] = value;
 }
-void HttpResponse::SetBody(const std::string& body){
-    body_=body;
+void HttpResponse::SetStaticFile(const std::string& path){
+    path_=path;
+    sendFileType_=SendFileType::StaticWebPage;
 }
+void HttpResponse::SetDynamicFile(const std::string& body){
+    body_=body;
+    sendFileType_=SendFileType::DynamicWebPage;
+}
+void HttpResponse::SetBigFile(const std::string& userFilePath){
+    userFilePath_=userFilePath;
+    sendFileType_=SendFileType::UserData;
+    struct stat fileStat;
+    if (stat(userFilePath.c_str(), &fileStat) < 0) { // 文件不存在或不可访问
+        LOG_ERROR("File not found: %s", userFilePath.c_str());
+        code_ = 404; // 自动设置404状态码
+        return;
+    }
+    if (!S_ISREG(fileStat.st_mode)) { // 非普通文件（如目录）
+        LOG_ERROR("Invalid file type: %s", userFilePath.c_str());
+        code_ = 400; // Bad Request
+        return;
+    }
+    userFileSize_ = fileStat.st_size; // 记录文件大小
+
+    std::string filename = userFilePath;
+    size_t pos = filename.find_last_of("/\\");
+    if (pos != std::string::npos) {
+        filename = filename.substr(pos + 1);
+    }
+    // 2. 设置必要响应头（后续在MakeResponse中使用）
+    headers_["Content-Type"] = "application/octet-stream";
+    headers_["Content-Disposition"] = "attachment; filename=\"" + filename + "\"";
+}
+
 
 int HttpResponse::GetSocketFD() const { 
     return fileFd_; 
@@ -146,6 +195,24 @@ void HttpResponse::AddHeader_(Buffer &buff){
         buff.Append("close\r\n");
     }
     buff.Append("Connect-Type: "+GetFileType_() + "\r\n");
+    size_t contentLength = 0;
+    switch (sendFileType_) {
+        case SendFileType::DynamicWebPage:
+            contentLength = body_.size(); // 动态内容长度
+            break;
+        case SendFileType::StaticWebPage:
+            contentLength = mmFileStat_.st_size; // 静态文件长度
+            break;
+        case SendFileType::UserData:
+            contentLength = userFileSize_; // 用户数据文件大小（需提前获取）
+            break;
+    }
+    buff.Append("Content-Length: " + std::to_string(contentLength) + "\r\n");
+    for (const auto& [key, value] : headers_) {
+        buff.Append(key + ": " + value + "\r\n");
+    }
+    buff.Append("\r\n"); // 头部结束标记
+
 }
 // <html>
 //       <head></head>
@@ -153,29 +220,56 @@ void HttpResponse::AddHeader_(Buffer &buff){
 //             <!--body goes here-->
 //       </body>
 // </html>
-void HttpResponse::AddContent_(Buffer &buff){
-    fileFd_=open((srcDir_+path_).data(),O_RDONLY);
-    if(fileFd_<0){
-        ErrorContent(buff,"File NotFound");
-        return ;
-    }else {
-        fstat(fileFd_, &mmFileStat_);
-    }
-    LOG_DEBUG("file path: %s",(srcDir_+path_).data());
-    // int* mmRet=(int*)mmap(0,mmFileStat_.st_size,PROT_READ,MAP_PRIVATE,srcFd,0);
-    // if(*mmRet==-1){
-    //     ErrorContent(buff,"File NotFound");
-    //     return ;
-    // }
-    // mmFile_=(char*)mmRet;
-    buff.Append("Content-length: " + std::to_string(mmFileStat_.st_size) + "\r\n\r\n");
-}
 
+// void HttpResponse::AddContent_(Buffer &buff){
+//     fileFd_=open((srcDir_+path_).data(),O_RDONLY);
+//     if(fileFd_<0){
+//         ErrorContent(buff,"File NotFound");
+//         return ;
+//     }else {
+//         fstat(fileFd_, &mmFileStat_);
+//     }
+//     LOG_DEBUG("file path: %s",(srcDir_+path_).data());
+//     // int* mmRet=(int*)mmap(0,mmFileStat_.st_size,PROT_READ,MAP_PRIVATE,srcFd,0);
+//     // if(*mmRet==-1){
+//     //     ErrorContent(buff,"File NotFound");
+//     //     return ;
+//     // }
+//     // mmFile_=(char*)mmRet;
+//     buff.Append("Content-length: " + std::to_string(mmFileStat_.st_size) + "\r\n\r\n");
+// }
+void HttpResponse::AddContent_(Buffer& buff) {
+    if (!body_.empty() && sendFileType_==SendFileType::DynamicWebPage) {
+        // httpconn中body_写入iov[1]
+        return;
+    }
+    else if (path_ != ""&& sendFileType_==SendFileType::StaticWebPage) {
+        //sendFile
+        fileFd_=open((path_).data(),O_RDONLY);
+        if(fileFd_<0){
+            ErrorContent(buff,"File NotFound");
+            return ;
+        }else {
+            fstat(fileFd_, &mmFileStat_);
+        }
+        LOG_DEBUG("file path: %s",(path_).data());
+    }else if (userFilePath_!=""&&sendFileType_==SendFileType::UserData) {
+        // sendFile
+        fileFd_=open((userFilePath_).data(),O_RDONLY);
+        if(fileFd_<0){
+            ErrorContent(buff,"File NotFound");
+            return ;
+        }else {
+            fstat(fileFd_, &mmFileStat_);
+        }
+        LOG_DEBUG("file path: %s",(path_).data());
+    }
+}
 void HttpResponse::ErrorHtml_(){
     auto it =CODE_PATH.find(code_);
     if(it!=CODE_PATH.end()){
         path_=it->second;
-        stat((srcDir_+path_).data(),&mmFileStat_);
+        stat((path_).data(),&mmFileStat_);
     }
 }
 // <html>

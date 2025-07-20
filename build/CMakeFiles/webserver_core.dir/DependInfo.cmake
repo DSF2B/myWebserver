@@ -12,6 +12,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/zilu/桌面/myWebserver/code/http/httpconn.cpp" "CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/http/httpconn.cpp.o.d"
   "/home/zilu/桌面/myWebserver/code/http/httprequest.cpp" "CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/http/httprequest.cpp.o.d"
   "/home/zilu/桌面/myWebserver/code/http/httpresponse.cpp" "CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.o.d"
+  "/home/zilu/桌面/myWebserver/code/http/webdisk.cpp" "CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.o.d"
   "/home/zilu/桌面/myWebserver/code/log/log.cpp" "CMakeFiles/webserver_core.dir/code/log/log.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/log/log.cpp.o.d"
   "/home/zilu/桌面/myWebserver/code/main.cpp" "CMakeFiles/webserver_core.dir/code/main.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/main.cpp.o.d"
   "/home/zilu/桌面/myWebserver/code/pool/sqlconnpool.cpp" "CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o" "gcc" "CMakeFiles/webserver_core.dir/code/pool/sqlconnpool.cpp.o.d"

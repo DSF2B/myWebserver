@@ -43,28 +43,21 @@ public:
     std::string version() const;
     std::string GetHeader(const std::string& key) const;
     std::string GetHeader(const char* key) const;
-    std::string GetPost(const std::string& key) const;
-    std::string GetPost(const char* key) const;
-    const std::string& GetBody() const;
+
+    const std::string& body() const;
     bool IsKeepAlive() const;
 
 private:
     bool ParseRequestLine_(const std::string& line);
     void ParseHeader_(const std::string& line);
-    void ParseBody_(const std::string& line);
+    void ParseBody_(Buffer& buff);
 
     void ParsePath_();
     void ParsePost_();
     void ParseFromUrlencoded_();
 
-    static bool UserVerify(const std::string& name, const std::string& pwd, bool isLogin);
-
     PARSE_STATE state_;
     std::string method_, path_, version_, body_;
     std::unordered_map<std::string, std::string> header_;
-    std::unordered_map<std::string, std::string> post_;
 
-    static const std::unordered_set<std::string> DEFAULT_HTML;
-    static const std::unordered_map<std::string, int> DEFAULT_HTML_TAG;
-    static int ConverHex(char ch);
 };

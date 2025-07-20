@@ -251,6 +251,30 @@ code/http/httpresponse.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/http/httpresponse.cpp.s
 .PHONY : code/http/httpresponse.cpp.s
 
+code/http/webdisk.o: code/http/webdisk.cpp.o
+.PHONY : code/http/webdisk.o
+
+# target to build an object file
+code/http/webdisk.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.o
+.PHONY : code/http/webdisk.cpp.o
+
+code/http/webdisk.i: code/http/webdisk.cpp.i
+.PHONY : code/http/webdisk.i
+
+# target to preprocess a source file
+code/http/webdisk.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.i
+.PHONY : code/http/webdisk.cpp.i
+
+code/http/webdisk.s: code/http/webdisk.cpp.s
+.PHONY : code/http/webdisk.s
+
+# target to generate assembly for a file
+code/http/webdisk.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/http/webdisk.cpp.s
+.PHONY : code/http/webdisk.cpp.s
+
 code/log/log.o: code/log/log.cpp.o
 .PHONY : code/log/log.o
 
@@ -469,6 +493,9 @@ help:
 	@echo "... code/http/httpresponse.o"
 	@echo "... code/http/httpresponse.i"
 	@echo "... code/http/httpresponse.s"
+	@echo "... code/http/webdisk.o"
+	@echo "... code/http/webdisk.i"
+	@echo "... code/http/webdisk.s"
 	@echo "... code/log/log.o"
 	@echo "... code/log/log.i"
 	@echo "... code/log/log.s"

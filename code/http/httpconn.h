@@ -60,8 +60,8 @@ private:
     Buffer readBuff_; // 读缓冲区
     Buffer writeBuff_; // 写缓冲区
 
-    HttpRequest request_;
-    HttpResponse response_;
+    std::shared_ptr<HttpRequest> request_;
+    std::shared_ptr<HttpResponse> response_;
 
     WebDisk webdisk_;
 };

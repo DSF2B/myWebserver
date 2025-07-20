@@ -8,13 +8,17 @@
 
 #include "buffer.h"
 #include "log.h"
-
+enum class SendFileType {
+    StaticWebPage,  // 静态网页
+    DynamicWebPage, // 动态网页
+    UserData        // 用户数据
+};
 class HttpResponse {
 public:
     HttpResponse();
     ~HttpResponse(); 
 
-    void Init(const std::string& srcDir, std::string& path, bool isKeepAlive = false, int code = -1);
+    void Init(bool isKeepAlive = false, int code = -1);
     void MakeResponse(Buffer& buff);
     // void UnmapFile();
     void CloseFd();
@@ -23,9 +27,13 @@ public:
     size_t FileLen() const;
     void ErrorContent(Buffer& buff, std::string message);
     int Code() const;
+    SendFileType sendFileType();
+    std::string& body();
     void SetCode(const int& code);
     void SetHeader(const std::string& key, const std::string& value);
-    void SetBody(const std::string& body);
+    void SetStaticFile(const std::string& path);
+    void SetDynamicFile(const std::string& body);
+    void SetBigFile(const std::string& userFilePath);
     int GetSocketFD() const;
 private:
     void AddStateLine_(Buffer &buff);
@@ -39,13 +47,17 @@ private:
     bool isKeepAlive_;
 
     std::string body_;
+    std::string path_;
+    std::string userFilePath_;
+    size_t userFileSize_;
+
+    SendFileType sendFileType_;  // 替换 isSendUserData_
+
     std::unordered_map<std::string, std::string> headers_;
 
-    std::string path_;
-    std::string srcDir_;
-    
     // char* mmFile_; 
     int fileFd_;
+    
     struct stat mmFileStat_;
 
     static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;

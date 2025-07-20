@@ -60,6 +60,8 @@
         "typeinfo": "cpp",
         "codecvt": "cpp",
         "fstream": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "shared_mutex": "cpp",
+        "optional": "cpp"
     }
 }
