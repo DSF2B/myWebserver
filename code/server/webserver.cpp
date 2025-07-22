@@ -163,13 +163,13 @@ void WebServer::Start() {
     if(!isClose_) { LOG_INFO("========== Server start =========="); }
     while(!isClose_) {
         int eventCnt = epoller_->Wait(100);
-        // for(int i = 0; i < eventCnt; i++) {
+        for(int i = 0; i < eventCnt; i++) {
         //     /* 处理事件 */
-        //     int fd = epoller_->GetEventFd(i);
-        //     if(fd == listenFd_) {
+            int fd = epoller_->GetEventFd(i);
+            if(fd == listenFd_) {
                 DealListen_();
-        //     }
-        // }
+            }
+        }
     }
 }  
 
@@ -186,7 +186,7 @@ void WebServer::DealListen_(){
             LOG_WARN("Clients is full!");
             return;
         }
-    }while(listenEvent_ & EPOLLET);
+    }while(listenEvent_ & EPOLLET && errno != EAGAIN);
 }
 void WebServer::AddClient_(int fd, sockaddr_in addr){
     assert(fd>0);

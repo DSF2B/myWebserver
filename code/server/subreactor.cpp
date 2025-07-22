@@ -7,8 +7,7 @@ isRunning_(false),
 openThreadPool_(openThreadPool),
 timer_(std::make_unique<HeapTimer>()),
 epoller_(std::make_unique<Epoller>()),
-threadpool_(threadpool),
-closePool_(std::make_unique<ThreadPool>(1))
+threadpool_(threadpool)
 {
     conn_queue_.resize(queue_capacity_);
     head_.store(0, std::memory_order_relaxed);
@@ -54,10 +53,9 @@ void SubReactor::Loop() {
                 if (events & EPOLLIN) {
                     //conn_queue积累够一定数量再通知epoll
                     // 读取eventfd并处理队列
-                    HandleQueueNotification(); 
+                    HandleQueueNotification();
                 }else if (events & (EPOLLRDHUP | EPOLLERR)) { // 处理eventfd异常
                     close(notify_fd_);
-
                     notify_fd_ = eventfd(0, EFD_NONBLOCK);
                     epoller_->AddFd(notify_fd_, EPOLLIN | EPOLLET);
                 }
@@ -66,16 +64,20 @@ void SubReactor::Loop() {
                 auto it = users_.find(fd);
                 if (it == users_.end()) continue; // 连接已关闭
                 if (events & EPOLLIN) {
-                    // if (openThreadPool_) {
-                    //     ThreadPoolDealRead_(&it->second);  // 线程池处理业务
-                    // }else{
-                    //     OnRead_(&it->second);
-                    // }
-                    OnRead_(&it->second);
+                    if (openThreadPool_) {
+                        threadpool_->AddTask(std::bind(&SubReactor::OnRead_,this, &it->second));
+                    }else{
+                        OnRead_(&it->second);
+                    }
+                    // OnRead_(&it->second);
                 }
                 else if(events & EPOLLOUT){
-                    OnWrite_(&it->second);
-                } 
+                    if (openThreadPool_) {
+                        threadpool_->AddTask(std::bind(&SubReactor::OnWrite_,this,&it->second));
+                    }else{
+                        OnWrite_(&it->second);
+                    }
+                }
                 else if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
                     CloseConn_(&it->second);  // 连接关闭事件直接处理
                 }
@@ -150,14 +152,6 @@ bool SubReactor::PushClient(int fd, uint32_t event,sockaddr_in addr){
     return true;
 }
 
-void SubReactor::ThreadPoolDealRead_(HttpConn* client){
-    threadpool_->AddTask(std::bind(&SubReactor::OnRead_,this, client));
-}
-
-void SubReactor::ThreadPoolDealWrite_(HttpConn* client){
-    threadpool_->AddTask(std::bind(&SubReactor::OnWrite_,this,client));
-}
-
 void SubReactor::OnRead_(HttpConn* client){
     assert(client);
     ExtentTime_(client);
@@ -207,11 +201,15 @@ void SubReactor::CloseConn_(HttpConn* client){
     //     client->Close(); // 异步执行耗时操作
     // });
     users_.erase(client->GetFd());
+    if(timeoutMS_>0){
+        timer_->del_fd(client->GetFd());
+    }
     client->Close();
     // threadpool_->AddTask([client] {
     //     client->Close(); // 异步执行耗时操作
         
     // });
+
 }
 void SubReactor::OnProcess(HttpConn* client){
     if(client->process()){

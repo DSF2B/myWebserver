@@ -62,6 +62,7 @@
         "fstream": "cpp",
         "iomanip": "cpp",
         "shared_mutex": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "cerrno": "cpp"
     }
 }

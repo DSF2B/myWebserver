@@ -102,7 +102,14 @@ void HeapTimer::del_(size_t i){
     }
     ref_.erase(heap_.back().id);
     heap_.pop_back();
-
+}
+void HeapTimer::del_fd(int fd){
+    std::lock_guard<std::mutex> lock(mtx_);
+    auto it = ref_.find(fd);
+    if (it == ref_.end()) return ;
+    size_t i = it->second;
+    del_(i);
+    return;
 }
 void HeapTimer::siftup_(size_t i){
     assert(i>=0 && i<heap_.size());

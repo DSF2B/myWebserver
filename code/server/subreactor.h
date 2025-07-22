@@ -30,8 +30,6 @@ private:
     static int SetFdNonblock(int fd);
     void Loop();
 
-    void ThreadPoolDealRead_(HttpConn* client);
-    void ThreadPoolDealWrite_(HttpConn* client);
     void OnRead_(HttpConn* client);
     void OnWrite_(HttpConn* client);
     void ExtentTime_(HttpConn* client);
@@ -46,13 +44,14 @@ private:
 private:
     int connEvent_;
     int timeoutMS_;
-    bool isRunning_;
+    std::atomic<bool> isRunning_;
     bool openThreadPool_;
+    std::shared_ptr<ThreadPool> threadpool_;
 
     std::unique_ptr<Epoller> epoller_;
-    std::shared_ptr<ThreadPool> threadpool_;
     std::unique_ptr<HeapTimer> timer_;
     std::unordered_map<int, HttpConn> users_;
+    
     std::thread thread_;
     // 无锁队列（环形缓冲区）
     alignas(64) std::atomic<size_t> head_{0};   // 缓存行对齐，避免伪共享
@@ -65,7 +64,5 @@ private:
     std::vector<int> pending_fds_;              // 暂存从队列取出的fd
     std::atomic<size_t> batch_count_{0};
     ssize_t queue_batch_size_=1;
-    //关闭池
-    std::unique_ptr<ThreadPool> closePool_; // 线程池指针
 
 };

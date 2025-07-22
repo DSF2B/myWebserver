@@ -22,8 +22,7 @@
 namespace fs = std::filesystem;
 class WebDisk {
 public:
-    WebDisk();
-    void Init(std::shared_ptr<HttpRequest> req, std::shared_ptr<HttpResponse> res,const std::string srcDir);    
+    WebDisk(std::shared_ptr<HttpRequest> req,std::shared_ptr<HttpResponse> res,const std::string srcDir);
     void Handle();
 private:
     void Login(); // 用户登录
@@ -48,10 +47,12 @@ private:
     std::string GenerateSessionToken();
     std::string ParseSessionToken();
     std::string SanitizePath(const std::string& path);
-    void MergeChunks(const std::string& file_id, const std::string& file_name);
     bool UserExists(const std::string& user);
     std::string GetUserDir();
     std::string GenerateFileUUID();
+    void UploadChunk();
+    void MergeChunks();
+    std::string extractJsonString(const std::string& json, size_t start);
     
 private:
     std::shared_ptr<HttpRequest> request_;
@@ -65,7 +66,7 @@ private:
 
     std::string rootDir_;   // 用户存储根目录
     std::string userDir_;        // 当前用户目录
-    std::string filePath_;  //用户操作的文件目录
+    std::string fileName_;  //用户操作的文件目录
     std::mutex mtx_;    
 
     static const std::unordered_map<std::string, int> FUNC_TAG;

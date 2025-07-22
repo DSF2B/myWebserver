@@ -41,6 +41,7 @@ void Buffer::RetrieveUntil(const char* end){
 // 取出所有数据，buffer归零，读写下标归零,在别的函数中会用到
 void Buffer::RetrieveAll(){
     bzero(&buffer_[0],buffer_.size());
+    //归还空间
     readPos_ = writePos_=0;
 }
 // 取出剩余可读的str
@@ -76,7 +77,7 @@ void Buffer::Append(const Buffer& buff){
     Append(buff.Peek(),buff.ReadableBytes());
 }
 ssize_t Buffer::ReadFd(int fd, int* Errno){
-    char buff[65535];
+    char buff[65535];//栈上
     struct iovec iov[2];
     const size_t writeable=WritableBytes();//目前剩余空间
     iov[0].iov_base=BeginPtr_() + writePos_;

@@ -42,7 +42,7 @@ add_library(webserver_core SHARED ${SOURCE_FILES})
 
 target_link_libraries(
     webserver_core
-    rt      
+    rt
     pthread 
     mysqlclient
 )

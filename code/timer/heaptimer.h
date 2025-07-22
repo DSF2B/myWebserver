@@ -37,6 +37,7 @@ public:
     void tick();
     void pop();
     int GetNextTick();
+    void del_fd(int fd);
 private:
     void del_(size_t i);
     void siftup_(size_t i);

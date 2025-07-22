@@ -9,7 +9,7 @@
 #include <assert.h>
 class Buffer {
 public:
-    Buffer(int initBuffSize = 10240);
+    Buffer(int initBuffSize = 1024*1024);
     ~Buffer() = default;
 
     size_t WritableBytes() const;       

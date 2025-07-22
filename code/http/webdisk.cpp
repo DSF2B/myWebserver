@@ -1,12 +1,24 @@
 #include "webdisk.h"
-WebDisk::WebDisk(){
+WebDisk::WebDisk(std::shared_ptr<HttpRequest> req, 
+    std::shared_ptr<HttpResponse> res,
+    const std::string srcDir){
     rootDir_ = "./usrdata/webdisk_users";
     fs::create_directories(rootDir_);
     fs::create_directories(rootDir_ + "/tmp");
     fs::create_directories(rootDir_ + "/chunks");
+    request_ = req;
+    response_ = res;
+    
+    username_="";
+    password_="";
+    srcDir_=srcDir;
+    post_.clear();
+    userDir_="";
+
 }
 const std::unordered_map<std::string, int> WebDisk::FUNC_TAG{
-    {"/login",0},{"/register",1},{"/api/files",2},{"/upload",3},{"/download",4},{"/delete",5},{"/logout",6}
+    {"/login",0},{"/register",1},{"/api/files",2},{"/upload",3},{"/download",4},
+    {"/delete",5},{"/logout",6},{"/upload_chunk",7},{"/merge_chunks",8}
 };
 // // 文件列表
 // GET /api/files
@@ -21,18 +33,7 @@ const std::unordered_map<std::string, int> WebDisk::FUNC_TAG{
 const std::unordered_set<std::string> WebDisk::DEFAULT_HTML{
     "/index","/register","/login","/welcome","/video","/picture"
 };
-void WebDisk::Init(std::shared_ptr<HttpRequest> req, 
-    std::shared_ptr<HttpResponse> res,
-    const std::string srcDir){
-    request_ = req;
-    response_ = res;
-    
-    username_="";
-    password_="";
-    srcDir_=srcDir;
-    post_.clear();
-    userDir_="";
-}
+
 void WebDisk::Handle(){
     std::lock_guard<std::mutex> lock(mtx_);
     ParsePath();
@@ -70,6 +71,13 @@ void WebDisk::Handle(){
         break;
     case 6:
         LogOut();
+        break;
+    case 7:
+        UploadChunk();
+        break;
+    case 8:
+        MergeChunks();
+        break;
     default:
         break;
     }
@@ -200,45 +208,55 @@ void WebDisk::ParseFromData() {
         // 2. 定位分片起始位置
         size_t partStart = body.find(boundary, start);
         if (partStart == std::string::npos) break;
-        // 3. 解析分片头部
+        // 3. 跳过边界标记本身
+        partStart += boundary.size();
+        if (body.substr(partStart, 2) == "--") { // 处理结束边界
+            break;
+        }
+        // 4. 解析分片头部（改进换行符处理）
+        partStart += 2; // 跳过\r\n
+
+
+        size_t headerStart=partStart;
         size_t headerEnd = body.find("\r\n\r\n", partStart);
         if (headerEnd == std::string::npos) break;
-        
+        size_t headerLength = headerEnd - headerStart;
         std::string headers = body.substr(
-            partStart + boundary.size() + 2, 
-            headerEnd - partStart - boundary.size() - 2
+            headerStart, 
+            headerLength
         );
-        // 4. 解析字段名和文件名
+
+        // 4. 解析header
         std::string name, filename;
         size_t namePos = headers.find("name=\"");
         if (namePos != std::string::npos) {
             size_t nameEnd = headers.find("\"", namePos + 6);
             name = headers.substr(namePos + 6, nameEnd - namePos - 6);
         }
-        size_t filePos = headers.find("filename=\"");
-        if (filePos != std::string::npos) {
-            size_t fileEnd = headers.find("\"", filePos + 10);
-            filename = headers.substr(filePos + 10, fileEnd - filePos - 10);
+
+        // 5. 提取正文
+        size_t contentStart = headerEnd + 4;
+        size_t contentEnd = body.find(boundary, contentStart);
+        if (contentEnd == std::string::npos){
+            contentEnd = body.size();
         }
-        // 5. 提取分片内容
-        size_t partEnd = body.find(boundary, headerEnd + 4);
-        if (partEnd == std::string::npos) break;
+        size_t contentLength = contentEnd - contentStart;
+        // 处理内容末尾的\r\n
+        if (contentLength >= 2 && 
+            body[contentEnd - 2] == '\r' && 
+            body[contentEnd - 1] == '\n') {
+            contentLength -= 2;
+        }
         std::string content = body.substr(
-            headerEnd + 4,
-            partEnd - headerEnd - 6  // 减去末尾\r\n
+            contentStart,
+            contentLength  // 减去末尾\r\n
         );
+        
         // 6. 存储数据[3]
         if (!name.empty()) {
-            if (!filename.empty()) {
-                post_[name + "_filename"] = filename;       // 存储文件名
-                post_[name + "_content"] = content;        // 存储文件内容
-                LOG_DEBUG("File parsed: %s (Size: %zu bytes)", filename.c_str(), content.size());
-            } else {
-                // 普通字段：直接存储内容
-                post_[name] = content;
-            }
+            post_[name] = content;
         }
-        start = partEnd + boundary.size();
+        start = contentEnd;
     }
 }
 void WebDisk::ParseFromDownloadPath(){
@@ -277,8 +295,7 @@ void WebDisk::ParseFromDownloadPath(){
             filename_decoded += filename_encoded[i];
         }
     }
-    filePath_ = SanitizePath(filename_decoded);
-    post_["file_name"] = filePath_;
+    fileName_ = SanitizePath(filename_decoded);
 
 }
 void WebDisk::ParseFromDeletePath(){
@@ -286,7 +303,7 @@ void WebDisk::ParseFromDeletePath(){
     const std::string& path = request_->path();
     // 复用相同的解析逻辑[6](@ref)
     size_t query_pos = path.find('?');
-    if (query_pos != std::string::npos) return;
+    if (query_pos == std::string::npos) return;
     std::string query = path.substr(query_pos + 1);
     size_t file_param_pos = query.find("file=");
     if (file_param_pos == std::string::npos) return ;
@@ -307,7 +324,7 @@ void WebDisk::ParseFromDeletePath(){
     // 安全过滤
     if (filename_decoded.find("..") == std::string::npos && 
         filename_decoded.find('/') != 0) {
-        filePath_ = filename_decoded;
+        fileName_ = filename_decoded;
     }
 }
 
@@ -415,9 +432,10 @@ void WebDisk::ListFiles() {
     }
     json << "]";
 
-    response_->SetDynamicFile(json.str());
+
     response_->SetHeader("Content-Type", "application/json");
     response_->SetCode(200);
+    response_->SetDynamicFile(json.str());
 }
 void WebDisk::UploadFile(){
     std::string token = ParseSessionToken();
@@ -429,23 +447,20 @@ void WebDisk::UploadFile(){
     username_ = *SessionManager::getInstance().getSessionValue(token);
     userDir_ = rootDir_ + "/" + SanitizePath(username_);
     if (!fs::exists(userDir_)) fs::create_directories(userDir_);
-    
-    for (const auto& [key, value] : post_) {
-        if (key.find("_filename") != std::string::npos) {
-            std::string baseKey = key.substr(0, key.size() - 9); // 移除"_filename"后缀
-            std::string filename = value;
-            std::string content = post_[baseKey + "_content"];
 
-            std::ofstream file(userDir_ + "/" + filename, std::ios::binary);
-            if (file) {
-                file.write(content.data(), content.size());
-                LOG_INFO("File saved: %s (Size: %zu bytes)", filename.c_str(), content.size());
-            } else {
-                LOG_ERROR("Failed to write file: %s", filename.c_str());
-            }
-        }
+    std::string filename = post_["filename"];
+    std::string content = post_["chunk"];
+    
+    std::ofstream file(userDir_ + "/" + filename, std::ios::binary);
+    if (file) {
+        file.write(content.data(), content.size());
+        LOG_INFO("File saved: %s (Size: %zu bytes)", filename.c_str(), content.size());
+    } else {
+        LOG_ERROR("Failed to write file: %s", filename.c_str());
     }
+
     response_->SetCode(200);
+    response_->SetDynamicFile(R"({"status": "upload_success"})");
 }
 
 void WebDisk::DownloadFile(){
@@ -455,9 +470,8 @@ void WebDisk::DownloadFile(){
         return;
     }
 
-    // 修正：使用filePath_而不是post_["file_name"]
-    // filePath_在ParseFromDownloadPath中已解析
-    std::string filename = filePath_;
+    // fileName_在ParseFromDownloadPath中已解析
+    std::string filename = fileName_;
     if (filename.empty()) {
         response_->SetCode(400);
         return;
@@ -466,15 +480,18 @@ void WebDisk::DownloadFile(){
     std::string filePath = GetUserDir() + "/" + SanitizePath(filename);
     response_->SetBigFile(filePath);
     response_->SetCode(200); // 成功时设置200状态码
+    response_->SetDynamicFile(R"({"status": "download_success"})");
 }
 void WebDisk::DeleteFile(){
     std::string token = ParseSessionToken();
     if (!SessionManager::getInstance().queryToken(token)) {
         return ;
     }
-    std::string file_path = SanitizePath(userDir_ + "/" + post_["file_name"]);
+    std::string file_path = GetUserDir() + "/" + SanitizePath(fileName_);
     std::string trash_path = rootDir_ + "/trash/" + username_ + "/" + std::to_string(time(nullptr));
     fs::rename(file_path, trash_path); // 实际需处理跨设备移动
+    response_->SetCode(200); // 成功时设置200状态码
+    response_->SetDynamicFile(R"({"status": "delete_success"})");
     return ;
 }
 void WebDisk::LogOut() {
@@ -507,6 +524,118 @@ void WebDisk::LogOut() {
     // 6. 返回成功响应
     response_->SetCode(200);
     response_->SetDynamicFile(R"({"status": "logout_success"})");
+}
+
+void WebDisk::UploadChunk() {
+    std::string token = ParseSessionToken();
+    if (!SessionManager::getInstance().queryToken(token)) {
+        response_->SetCode(401);
+        return;
+    }
+    username_ = *SessionManager::getInstance().getSessionValue(token);
+    // 从POST数据中获取分块信息
+    std::string fileId = post_["fileId"];
+    std::string fileName = post_["fileName"];
+    std::string chunkIndex = post_["chunkIndex"];
+    std::string chunkContent = post_["chunk"];
+    
+    if (fileId.empty() || fileName.empty() || chunkIndex.empty()) {
+        response_->SetCode(400);
+        return;
+    }
+    
+    // 创建分块存储目录
+    std::string chunkDir = rootDir_ + "/chunks/" + SanitizePath(fileId);
+    fs::create_directories(chunkDir);
+    
+    // 保存分块文件
+    std::string chunkPath = chunkDir + "/" + chunkIndex + ".part";
+    std::ofstream chunkFile(chunkPath, std::ios::binary);
+    if (chunkFile) {
+        chunkFile.write(chunkContent.data(), chunkContent.size());
+        chunkFile.close();
+        
+        response_->SetCode(200);
+        response_->SetDynamicFile(R"({"status": "chunk_uploaded"})");
+        LOG_INFO("Chunk %s uploaded for file %s", chunkIndex.c_str(), fileName.c_str());
+    } else {
+        response_->SetCode(500);
+        response_->SetDynamicFile(R"({"error": "Failed to save chunk"})");
+    }
+}
+
+void WebDisk::MergeChunks() {
+    std::string token = ParseSessionToken();
+    if (!SessionManager::getInstance().queryToken(token)) {
+        response_->SetCode(401);
+        return;
+    }
+
+    username_ = *SessionManager::getInstance().getSessionValue(token);
+    userDir_ = rootDir_ + "/" + SanitizePath(username_);
+    
+    // 解析JSON请求体
+    std::string body = request_->body();
+    size_t fileIdPos = body.find("\"fileId\":\"");
+    size_t fileNamePos = body.find("\"fileName\":\"");
+    
+    if (fileIdPos == std::string::npos || fileNamePos == std::string::npos) {
+        response_->SetCode(400);
+        return;
+    }
+    
+    std::string fileId = extractJsonString(body, fileIdPos + 10);
+    std::string fileName = extractJsonString(body, fileNamePos + 12);
+    
+    if (fileId.empty() || fileName.empty()) {
+        response_->SetCode(400);
+        return;
+    }
+    
+    // 执行文件合并
+    try {
+        fs::path chunk_dir = rootDir_ + "/chunks/" + fileId;
+        fs::path final_path = userDir_ + "/" + fileName;
+        
+        std::ofstream final_file(final_path, std::ios::binary);
+        if (!final_file.is_open()) {
+            LOG_ERROR("无法创建最终文件: %s", final_path.c_str());
+            response_->SetCode(500);
+            response_->SetDynamicFile(R"({"error": "Failed to create file"})");
+            return;
+        }
+        
+        // 按顺序合并所有分块
+        for (int i = 0; ; i++) {
+            fs::path chunk_path = chunk_dir / (std::to_string(i) + ".part");
+            if (!fs::exists(chunk_path)) break;
+            
+            std::ifstream chunk_file(chunk_path, std::ios::binary);
+            if (chunk_file.is_open()) {
+                final_file << chunk_file.rdbuf();
+                chunk_file.close();
+            }
+            
+            fs::remove(chunk_path);
+        }
+        
+        fs::remove(chunk_dir);
+        
+        LOG_INFO("文件合并成功: %s", final_path.c_str());
+        response_->SetCode(200);
+        response_->SetDynamicFile(R"({"status": "merge_success"})");
+        
+    } catch (const std::exception& e) {
+        LOG_ERROR("合并分块失败: %s", e.what());
+        response_->SetCode(500);
+        response_->SetDynamicFile(R"({"error": "Merge failed"})");
+    }
+}
+
+std::string WebDisk::extractJsonString(const std::string& json, size_t start) {
+    size_t end = json.find("\"", start);
+    if (end == std::string::npos) return "";
+    return json.substr(start, end - start);
 }
 
 
@@ -564,38 +693,6 @@ std::string WebDisk::SanitizePath(const std::string& path) {
         return c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|';
     }), clean.end());
     return clean;
-}
-void WebDisk::MergeChunks(const std::string& file_id, const std::string& file_name) {
-    try {
-        // 1. 准备分块目录和最终文件路径
-        fs::path chunk_dir = rootDir_ + "/chunks/" + file_id;
-        fs::path final_path = userDir_ + "/" + file_name;
-        // 2. 打开最终文件
-        std::ofstream final_file(final_path, std::ios::binary);
-        if (!final_file.is_open()) {
-            LOG_ERROR("无法创建最终文件: %s", final_path.c_str());
-            return;
-        }
-        // 3. 按顺序合并所有分块
-        for (int i = 0; ; i++) {
-            fs::path chunk_path = chunk_dir / (std::to_string(i) + ".part");
-            if (!fs::exists(chunk_path)) break;
-            // 4. 读取分块内容并写入最终文件
-            std::ifstream chunk_file(chunk_path, std::ios::binary);
-            if (chunk_file.is_open()) {
-                final_file << chunk_file.rdbuf();
-                chunk_file.close();
-            }
-            // 5. 删除临时分块文件
-            fs::remove(chunk_path);
-        }
-        // 6. 删除空的分块目录
-        fs::remove(chunk_dir);
-        
-        LOG_INFO("文件合并成功: %s", final_path.c_str());
-    } catch (const std::exception& e) {
-        LOG_ERROR("合并分块失败: %s", e.what());
-    }
 }
 std::string WebDisk::GenerateFileUUID() {
     std::random_device rd;

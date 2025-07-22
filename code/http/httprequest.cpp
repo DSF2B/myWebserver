@@ -164,7 +164,6 @@ bool HttpRequest::parse(Buffer& buff){
     if(buff.WritableBytes() <=0){
         return false;
     } 
-
     while(buff.ReadableBytes() && state_!=FINISH){
         const char* lineEnd=std::search(buff.Peek(),buff.BeginWriteConst(),CRLF,CRLF+2);
         if(lineEnd == buff.BeginWrite())break;//读到了写区，已经读完

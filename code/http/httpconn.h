@@ -50,7 +50,7 @@ private:
     int fd_;
     struct  sockaddr_in addr_;
 
-    bool isClose_;
+    std::atomic<bool> isClose_;
 
     off_t fileOffset_; // 新增：文件发送偏移量
     
@@ -63,5 +63,4 @@ private:
     std::shared_ptr<HttpRequest> request_;
     std::shared_ptr<HttpResponse> response_;
 
-    WebDisk webdisk_;
 };

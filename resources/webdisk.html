@@ -468,45 +468,99 @@
                 e.target.value = ''; // 重置input
             }
         }
-        
-        // 单文件上传函数
+        // 分块上传配置
+        const CHUNK_SIZE = 1024 * 1024; // 1MB per chunk
+
         function uploadSingleFile(file, progressBar, progressText, currentFile) {
-            return new Promise((resolve, reject) => {
+            return new Promise(async (resolve, reject) => {
                 currentFile.textContent = `上传中: ${file.name}`;
                 
-                const formData = new FormData();
-                // 创建新Blob对象并指定UTF-8编码
-                formData.append('files', file, file.name); 
-                formData.append('file_name', file.name); // 若需单独传递文件名，保留此字段（无需编码）
+                try {
+                    // 生成文件唯一标识
+                    const fileId = generateFileId();
+                    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                    
+                    // 分块上传
+                    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                        const start = chunkIndex * CHUNK_SIZE;
+                        const end = Math.min(start + CHUNK_SIZE, file.size);
+                        const chunk = file.slice(start, end);
+                        
+                        await uploadChunk(chunk, chunkIndex, totalChunks, fileId, file.name);
 
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/upload', true);
-                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
-                
-                // 上传进度事件
-                xhr.upload.addEventListener('progress', (event) => {
-                    if (event.lengthComputable) {
-                        const percentComplete = Math.round((event.loaded / event.total) * 100);
-                        progressBar.style.width = `${percentComplete}%`;
-                        progressText.textContent = `${percentComplete}%`;
+                        // 更新进度
+                        const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `${progress}%`;
                     }
-                });
+                    
+                    // 所有分块上传完成，通知服务器合并
+                    await mergeChunks(fileId, file.name);
+                    
+                    resolve({ success: true, filename: file.name });
+                    
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function uploadChunk(chunk, chunkIndex, totalChunks, fileId, fileName) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('chunk', chunk, fileName);
+                formData.append('chunkIndex', chunkIndex.toString());
+                formData.append('totalChunks', totalChunks.toString());
+                formData.append('fileId', fileId);
+                formData.append('fileName', fileName);
+
                 
-                // 请求完成处理
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/upload_chunk', true);
+                
+                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
+        
                 xhr.onload = () => {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         resolve();
                     } else {
-                        reject(new Error(`上传失败: ${xhr.statusText}`));
+                        reject(new Error(`分块上传失败: ${xhr.status}`));
                     }
                 };
                 
-                xhr.onerror = () => {
-                    reject(new Error('网络错误'));
-                };
+                xhr.onerror = () => reject(new Error('网络错误'));
+                xhr.ontimeout = () => reject(new Error('上传超时'));
+                xhr.timeout = 300000;
                 
                 xhr.send(formData);
             });
+        }
+
+        function mergeChunks(fileId, fileName) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/merge_chunks', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve();
+                    } else {
+                        reject(new Error(`文件合并失败: ${xhr.status}`));
+                    }
+                };
+                
+                xhr.onerror = () => reject(new Error('网络错误'));
+                
+                xhr.send(JSON.stringify({
+                    fileId: fileId,
+                    fileName: fileName
+                }));
+            });
+        }
+
+        function generateFileId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
         
         // 退出处理
@@ -703,7 +757,12 @@
                     throw new Error(`删除失败: ${response.status}`);
                 }
                 
-                return response.json();
+                // 检查响应是否有内容再解析JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                }
+                return { success: true }; // 默认成功响应
             } catch (error) {
                 console.error('删除失败:', error);
                 throw error;

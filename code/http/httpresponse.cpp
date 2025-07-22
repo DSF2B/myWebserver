@@ -42,7 +42,6 @@ HttpResponse::HttpResponse(){
     fileFd_=-1;
     mmFileStat_={0};
     userFileSize_=0;
-
 }
 HttpResponse::~HttpResponse(){
     // UnmapFile();
@@ -65,33 +64,16 @@ void HttpResponse::Init(bool isKeepAlive, int code){
     mmFileStat_={0};
 }
 void HttpResponse::MakeResponse(Buffer& buff){
-    // 根据发送类型选择要检查的文件路径
-    std::string fileToCheck;
-    bool needFileCheck = false;
-    
-    if (sendFileType_ == SendFileType::StaticWebPage && !path_.empty()) {
-        fileToCheck = path_;
-        needFileCheck = true;
-    } else if (sendFileType_ == SendFileType::UserData && !userFilePath_.empty()) {
-        fileToCheck = userFilePath_;
-        needFileCheck = true;
-    }
-    
-    // 只对需要文件的类型进行文件检查
-    if (needFileCheck) {
-        if(stat(fileToCheck.data(), &mmFileStat_)<0 || S_ISDIR(mmFileStat_.st_mode)){
-            code_=404;
-        }else if(!(mmFileStat_.st_mode & S_IROTH)){
-            code_=403;
-        }else if(code_ == -1){
-            code_=200;
-        }
-    } else if(code_ == -1){
-        // 动态内容或无需文件检查的情况
-        code_=200;
+    // 如果状态码未设置，根据发送类型设置默认状态码
+    if(code_ == -1){
+        code_ = 200; // 默认成功状态码
     }
 
-    ErrorHtml_();
+    // 只有在出现错误状态码时才需要错误页面处理
+    if(code_ >= 400) {
+        ErrorHtml_();
+    }
+    
     AddStateLine_(buff);
     AddHeader_(buff);
     AddContent_(buff);
@@ -136,6 +118,23 @@ void HttpResponse::SetHeader(const std::string& key, const std::string& value) {
 void HttpResponse::SetStaticFile(const std::string& path){
     path_=path;
     sendFileType_=SendFileType::StaticWebPage;
+    
+    // 检查静态文件是否存在和可访问
+    if (stat(path.c_str(), &mmFileStat_) < 0) {
+        LOG_ERROR("Static file not found: %s", path.c_str());
+        code_ = 404;
+        return;
+    }
+    if (S_ISDIR(mmFileStat_.st_mode)) {
+        LOG_ERROR("Path is directory, not file: %s", path.c_str());
+        code_ = 403;
+        return;
+    }
+    if (!(mmFileStat_.st_mode & S_IROTH)) {
+        LOG_ERROR("Static file not readable: %s", path.c_str());
+        code_ = 403;
+        return;
+    }
 }
 void HttpResponse::SetDynamicFile(const std::string& body){
     body_=body;
@@ -144,18 +143,17 @@ void HttpResponse::SetDynamicFile(const std::string& body){
 void HttpResponse::SetBigFile(const std::string& userFilePath){
     userFilePath_=userFilePath;
     sendFileType_=SendFileType::UserData;
-    struct stat fileStat;
-    if (stat(userFilePath.c_str(), &fileStat) < 0) { // 文件不存在或不可访问
+    if (stat(userFilePath.c_str(), &mmFileStat_) < 0) { // 文件不存在或不可访问
         LOG_ERROR("File not found: %s", userFilePath.c_str());
         code_ = 404; // 自动设置404状态码
         return;
     }
-    if (!S_ISREG(fileStat.st_mode)) { // 非普通文件（如目录）
+    if (!S_ISREG(mmFileStat_.st_mode)) { // 非普通文件（如目录）
         LOG_ERROR("Invalid file type: %s", userFilePath.c_str());
         code_ = 400; // Bad Request
         return;
     }
-    userFileSize_ = fileStat.st_size; // 记录文件大小
+    userFileSize_ = mmFileStat_.st_size; // 记录文件大小
 
     std::string filename = userFilePath;
     size_t pos = filename.find_last_of("/\\");
@@ -243,26 +241,25 @@ void HttpResponse::AddContent_(Buffer& buff) {
         // httpconn中body_写入iov[1]
         return;
     }
-    else if (path_ != ""&& sendFileType_==SendFileType::StaticWebPage) {
-        //sendFile
+    else if (path_ != "" && sendFileType_==SendFileType::StaticWebPage) {
+        // 静态文件：检查并打开文件
         fileFd_=open((path_).data(),O_RDONLY);
         if(fileFd_<0){
-            ErrorContent(buff,"File NotFound");
-            return ;
-        }else {
-            fstat(fileFd_, &mmFileStat_);
+            LOG_ERROR("Failed to open static file: %s", path_.c_str());
+            code_ = 404; // 设置错误状态码
+            return;
         }
-        LOG_DEBUG("file path: %s",(path_).data());
-    }else if (userFilePath_!=""&&sendFileType_==SendFileType::UserData) {
-        // sendFile
+        LOG_DEBUG("Static file opened: %s", path_.c_str());
+    }
+    else if (userFilePath_!="" && sendFileType_==SendFileType::UserData) {
+        // 用户文件：SetBigFile已检查过，直接打开
         fileFd_=open((userFilePath_).data(),O_RDONLY);
         if(fileFd_<0){
-            ErrorContent(buff,"File NotFound");
-            return ;
-        }else {
-            fstat(fileFd_, &mmFileStat_);
+            LOG_ERROR("Failed to open user file: %s", userFilePath_.c_str());
+            code_ = 404; // 设置错误状态码  
+            return;
         }
-        LOG_DEBUG("file path: %s",(path_).data());
+        LOG_DEBUG("User file opened: %s", userFilePath_.c_str());
     }
 }
 void HttpResponse::ErrorHtml_(){

@@ -468,22 +468,21 @@
                 e.target.value = ''; // 重置input
             }
         }
-        
-        // 单文件上传函数
+        const CHUNK_SIZE = 1024 * 1024; // 1MB per chunk
+
         function uploadSingleFile(file, progressBar, progressText, currentFile) {
             return new Promise((resolve, reject) => {
                 currentFile.textContent = `上传中: ${file.name}`;
                 
                 const formData = new FormData();
-                // 创建新Blob对象并指定UTF-8编码
-                formData.append('files', file, file.name); 
-                formData.append('file_name', file.name); // 若需单独传递文件名，保留此字段（无需编码）
+                formData.append('files', file, file.name);
+                formData.append('file_name', file.name);
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', '/upload', true);
                 xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
                 
-                // 上传进度事件
+                // 上传进度监听
                 xhr.upload.addEventListener('progress', (event) => {
                     if (event.lengthComputable) {
                         const percentComplete = Math.round((event.loaded / event.total) * 100);
@@ -494,16 +493,31 @@
                 
                 // 请求完成处理
                 xhr.onload = () => {
+                    console.log('Upload status:', xhr.status);
+                    console.log('Upload statusText:', xhr.statusText);
+                    console.log('Upload responseText:', xhr.responseText);
+                    
                     if (xhr.status >= 200 && xhr.status < 300) {
-                        resolve();
+                        console.log('Upload success for:', file.name);
+                        resolve({ success: true, filename: file.name });
                     } else {
-                        reject(new Error(`上传失败: ${xhr.statusText}`));
+                        console.log('Upload failed for:', file.name);
+                        reject(new Error(`上传失败: ${xhr.status} ${xhr.statusText}`));
                     }
                 };
-                
+
                 xhr.onerror = () => {
-                    reject(new Error('网络错误'));
+                    console.log('Upload network error for:', file.name);
+                    reject(new Error(`网络错误: ${file.name}`));
                 };
+
+                xhr.ontimeout = () => {
+                    console.log('Upload timeout for:', file.name);
+                    reject(new Error(`上传超时: ${file.name}`));
+                };
+                
+                // 设置超时时间（可选）
+                xhr.timeout = 30000; // 30秒超时
                 
                 xhr.send(formData);
             });
@@ -549,82 +563,53 @@
             }
         }
         
-        // 获取文件列表
         async function fetchFiles() {
             const container = document.getElementById('fileListContainer');
-            
-            try {
-                // 显示加载状态
-                container.innerHTML = `
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <span>正在加载文件列表...</span>
-                    </div>
-                `;
-                
-                // 从API获取文件数据
-                const response = await fetch('/api/files', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`获取文件列表失败: ${response.status}`);
-                }
-                
-                const files = await response.json();
-                renderFileTable(files);
-                
-            } catch (error) {
-                console.error('获取文件列表失败:', error);
-                container.innerHTML = `
-                    <div class="error-message">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span>${error.message || '获取文件列表失败，请稍后重试'}</span>
-                    </div>
-                `;
-            }
+            container.innerHTML = `<div class="loading">加载中...</div>`;
+
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 10000);
+
+            // 直接发起请求并处理响应
+            const response = await fetch('/api/files', {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` 
+                },
+                signal: controller.signal
+            });
+
+            // 关键修改：跳过状态码检查，直接解析JSON（无论状态码是什么）
+            const files = await response.json();
+            renderFileTable(files); // 渲染数据到页面
         }
-        
+
+
         // 渲染文件表格
         function renderFileTable(files) {
             const container = document.getElementById('fileListContainer');
             
+            // 空状态处理（含刷新按钮）
             if (!files || files.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="bi bi-folder-x"></i>
                         <h4>文件夹为空</h4>
                         <p>您还没有上传任何文件，点击"上传文件"按钮开始上传</p>
+                        <button class="btn btn-sm btn-primary mt-2" onclick="fetchFiles()">刷新列表</button>
                     </div>
                 `;
                 return;
             }
             
-            let tableHTML = `
-                <div class="table-responsive">
-                    <table class="table" id="fileTable">
-                        <thead>
-                            <tr>
-                                <th>文件名</th>
-                                <th>类型</th>
-                                <th>大小</th>
-                                <th>修改时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            files.forEach(file => {
+            // 使用 map + join 高效生成表格行
+            const rowsHTML = files.map(file => {
                 const iconClass = getFileIcon(file.name);
                 const fileSize = formatFileSize(file.size);
-                const modifiedTime = new Date(file.modified).toLocaleString();
+                const modifiedTime = file.modified < 0 
+                    ? "时间无效" 
+                    : new Date(file.modified).toLocaleString();
                 
-                tableHTML += `
+                return `
                     <tr>
                         <td data-label="文件名"><i class="${iconClass} file-icon"></i>${file.name}</td>
                         <td data-label="类型">${file.type || '文件'}</td>
@@ -642,52 +627,82 @@
                         </td>
                     </tr>
                 `;
-            });
+            }).join('');
             
-            tableHTML += `
+            // 注入整个表格
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table class="table" id="fileTable">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>类型</th>
+                                <th>大小</th>
+                                <th>修改时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML}
                         </tbody>
                     </table>
                 </div>
             `;
             
-            container.innerHTML = tableHTML;
-            
-            // 添加下载事件监听
-            document.querySelectorAll('.download-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const filename = btn.dataset.file;
+            // 事件委托：统一监听下载/删除事件
+            container.querySelector('#fileTable').addEventListener('click', async (e) => {
+                const downloadBtn = e.target.closest('.download-btn');
+                const deleteBtn = e.target.closest('.delete-btn');
+                
+                if (downloadBtn) {
+                    const filename = downloadBtn.dataset.file;
                     downloadFile(filename);
-                });
-            });
-            
-            // 添加删除事件监听
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const filename = btn.dataset.file;
+                }
+                
+                if (deleteBtn) {
+                    const filename = deleteBtn.dataset.file;
                     if (confirm(`确定删除 "${filename}" 吗?`)) {
                         try {
                             await deleteFile(filename);
-                            await fetchFiles();
+                            await fetchFiles(); // 刷新列表
                         } catch (error) {
                             console.error('删除失败:', error);
                             alert('文件删除失败');
                         }
                     }
-                });
+                }
             });
         }
-        
         // 下载文件
         function downloadFile(filename) {
-            const a = document.createElement('a');
-            a.href = `/download?file=${encodeURIComponent(filename)}`;
-            a.download = filename;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            fetch(`/download?file=${encodeURIComponent(filename)}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`下载失败: ${response.status}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('下载失败:', error);
+                alert(`下载失败: ${filename}`);
+            });
         }
-        
+
         // 删除文件
         async function deleteFile(filename) {
             try {
@@ -702,7 +717,12 @@
                     throw new Error(`删除失败: ${response.status}`);
                 }
                 
-                return response.json();
+                // 检查响应是否有内容再解析JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                }
+                return { success: true }; // 默认成功响应
             } catch (error) {
                 console.error('删除失败:', error);
                 throw error;

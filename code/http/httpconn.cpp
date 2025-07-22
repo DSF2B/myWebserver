@@ -35,7 +35,9 @@ void HttpConn::Close(){
     if(isClose_==false){
         isClose_=true;
         userCount--;
-        response_->CloseFd();
+        if (response_) {
+            response_->CloseFd();
+        }
         close(fd_);
         LOG_DEBUG("Client[%d](%s:%d) quit, userCount:%d",fd_,GetIP(),GetPort(),(int)userCount);
     }
@@ -128,6 +130,9 @@ ssize_t HttpConn::write(int* saveErrno){
     if(iov_[0].iov_len+iov_[1].iov_len==0 && totalToSent > 0 && response_->File()!=-1){
         //前一个已经发完才能才第二个
         do{
+            if(!response_){
+                std::cerr<<"response_ is null"<<std::endl;
+            }
             ssize_t sent = sendfile(fd_, response_->File(), &fileOffset_, response_->FileLen() - fileOffset_);
             if(sent==0){
                 break;
@@ -152,16 +157,16 @@ ssize_t HttpConn::write(int* saveErrno){
     else return 0;
 }
 bool HttpConn::process(){
-    
     request_->Init();
     if(readBuff_.ReadableBytes()<=0){
         return false;
     }
     else if(request_->parse(readBuff_)){
+        readBuff_.RetrieveAll();
         LOG_DEBUG("%s",request_->path().c_str());
     }
-    webdisk_.Init(request_,response_,srcDir);
-    webdisk_.Handle();
+    std::unique_ptr<WebDisk>webdisk = std::make_unique<WebDisk>(request_,response_,srcDir);
+    webdisk->Handle();
 
     writeBuff_.RetrieveAll();
     response_->MakeResponse(writeBuff_);
