@@ -9,10 +9,6 @@ HeapTimer::~HeapTimer() {
 
 void HeapTimer::adjust(int id, int newExpires){
     std::lock_guard<std::mutex> lock(mtx_);
-    if(ref_.count(id) == 0){
-        std::cout<<id;
-        return;
-    }
     assert(!heap_.empty() && ref_.count(id)>0);
     int idx=ref_[id];
     heap_[idx].expires = std::chrono::high_resolution_clock::now() + MS(newExpires);

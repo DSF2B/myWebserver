@@ -38,6 +38,8 @@ public:
     bool process();
 
     int ToWriteBytes();
+    bool IsRequestComplete() const;
+    size_t GetReadableBytes() const;
 
     bool IsKeepAlive() const;
 

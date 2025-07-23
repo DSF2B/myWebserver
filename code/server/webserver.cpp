@@ -154,9 +154,21 @@ bool WebServer::InitSocket_(){
     }
     SetFdNonblock(listenFd_);
     LOG_INFO("Server port:%d", port_);
+
+    // 设置接收缓冲区大小
+    int rcvbuf = 256 * 1024; // 256KB
+    ret = setsockopt(listenFd_, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf));
+    if(ret < 0) {
+        LOG_WARN("Set SO_RCVBUF failed");
+    }
+    
+    // 设置发送缓冲区大小  
+    int sndbuf = 256 * 1024; // 256KB
+    ret = setsockopt(listenFd_, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf));
+    if(ret < 0) {
+        LOG_WARN("Set SO_SNDBUF failed");
+    }
     return true;
-
-
 }
 
 void WebServer::Start() {
@@ -178,25 +190,27 @@ void WebServer::DealListen_(){
     socklen_t len=sizeof(addr);
     do{
         int fd=accept(listenFd_,(struct sockaddr*)&addr, &len);
-        if(fd<=0)return ;
-
+        if (fd <= 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) break; // 无更多连接
+            else return; // 其他错误
+        }
+        // std::cout<<"acceptfd:"<<fd<<std::endl;
         AddClient_(fd,addr);
         if(HttpConn::userCount >=MAX_FD){
             SendError_(fd, "Server busy!");
             LOG_WARN("Clients is full!");
             return;
         }
-    }while(listenEvent_ & EPOLLET && errno != EAGAIN);
+    }while(listenEvent_ & EPOLLET);
 }
 void WebServer::AddClient_(int fd, sockaddr_in addr){
     assert(fd>0);
     // 轮询选择一个子Reactor
     int subReactorIdx = fd % subReactors_.size();
     // int subReactorIdx = rand() % subReactors_.size();  // 使用随机数生成器
-
     auto& subReactor = subReactors_[subReactorIdx];
     // subReactor->AddClient(fd, EPOLLIN | connEvent_, addr);//修改subreactor，需要锁
-    if (!subReactor->PushClient(fd, EPOLLIN | connEvent_, addr)) {
+    if (!subReactor->PushClient(fd, addr)) {
         LOG_WARN("SubReactor[%d] queue full! Dropping fd=%d", subReactorIdx, fd);
         close(fd);  // 队列满时立即关闭连接
         return;
@@ -216,7 +230,7 @@ int WebServer::SetFdNonblock(int fd){
     // 复制一个已经有的描述符（cmd=F_DUPFD或者F_DUPFD_CLOEXEC）
     // 获取/设置文件描述符标志（cmd=F_GETFD或者F_SETFD）
     // 获取/设置文件状态标志（cmd=F_GETFL或者F_SETFL）
-    int old_option=fcntl(fd,F_GETFD);
+    int old_option=fcntl(fd,F_GETFL);
     //F_GETFD\F_SETFD:FD_CLOEXEC
     //F_GETFL:O_RDONLY 、O_WRONLY、O_RDWR
     //F_SETFL:O_APPEND、 O_ASYNC、 O_DIRECT、 O_NOATIME、O_NONBLOCK

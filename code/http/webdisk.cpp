@@ -16,12 +16,23 @@ WebDisk::WebDisk(std::shared_ptr<HttpRequest> req,
     userDir_="";
 
 }
+// const std::unordered_map<std::string, int> WebDisk::FUNC_TAG{
+//     {"/login",0},{"/register",1},{"/files",2},{"/upload",3},{"/download",4},
+//     {"/delete",5},{"/logout",6},{"/upload_chunk",7},{"/merge_chunks",8}
+// };
 const std::unordered_map<std::string, int> WebDisk::FUNC_TAG{
-    {"/login",0},{"/register",1},{"/api/files",2},{"/upload",3},{"/download",4},
-    {"/delete",5},{"/logout",6},{"/upload_chunk",7},{"/merge_chunks",8}
+    {"/api2/login",0},        // POST /api2/login - 执行登录
+    {"/api2/register",1},     // POST /api2/register - 执行注册  
+    {"/api2/files",2},        // GET /api2/files - 获取文件列表
+    {"/api2/upload",3},       // POST /api2/upload - 文件上传
+    {"/api2/download",4},     // GET /api2/download - 文件下载
+    {"/api2/delete",5},       // DELETE /api2/delete - 删除文件
+    {"/api2/logout",6},       // POST /api2/logout - 退出登录
+    {"/api2/upload_chunk",7}, // POST /api2/upload_chunk - 分块上传
+    {"/api2/merge_chunks",8}  // POST /api2/merge_chunks - 合并分块
 };
 // // 文件列表
-// GET /api/files
+// GET /api2/files
 // // 文件上传
 // POST /upload
 // // 文件下载
@@ -31,15 +42,14 @@ const std::unordered_map<std::string, int> WebDisk::FUNC_TAG{
 // // 退出登录
 // POST /logout
 const std::unordered_set<std::string> WebDisk::DEFAULT_HTML{
-    "/index","/register","/login","/welcome","/video","/picture"
+    "/index","/register","/login","/welcome","/video","/picture","/webdisk"
 };
 
 void WebDisk::Handle(){
-    std::lock_guard<std::mutex> lock(mtx_);
     ParsePath();
     //path_:
     // "/index","/register","/login","/welcome","/video","/picture"
-    // /api/files  /upload  /download  /delete  /logout
+    // /api2/files  /upload  /download  /delete  /logout
 
     auto it=FUNC_TAG.find(path_);
     if(it==FUNC_TAG.end()){
@@ -84,29 +94,32 @@ void WebDisk::Handle(){
 }
 void WebDisk::ParsePath(){
     path_=request_->path();
+    size_t query_pos = path_.find('?');
+    ///api2/download？
+    if(query_pos !=std::string::npos){
+        path_=path_.substr(0,query_pos);
+    }
+    
     if(path_ == "/"){
         path_="/index";
         response_->SetStaticFile(srcDir_+"/index.html");
-    }else if(path_ == "/api/files"){
-        return;
+    }else if(path_=="/api2/download"){
+        ParseFromDownloadPath();
+    }else if(path_=="/api2/delete"){
+        ParseFromDeletePath();
     }else{
-        auto it=DEFAULT_HTML.find(path_);
-        if(it!=DEFAULT_HTML.end()){
-            response_->SetStaticFile(srcDir_+it->data()+".html");
+        auto it=FUNC_TAG.find(path_);
+        if(it != FUNC_TAG.end()){
+            LOG_DEBUG("API route detected: [%s]", path_.c_str());
+            return;  // API路由，交给Handle()处理，不设置静态文件
         }else{
-            size_t query_pos = path_.find('?');
-            if(query_pos !=std::string::npos){
-                path_=path_.substr(0,query_pos);
-                if(path_=="/download"){
-                    ParseFromDownloadPath();
-                }else if(path_=="/delete"){
-                    ParseFromDeletePath();
-                }
+            auto it=DEFAULT_HTML.find(path_);
+            if(it!=DEFAULT_HTML.end()){
+                response_->SetStaticFile(srcDir_+it->data()+".html");
             }else{
                 //css...
                 response_->SetStaticFile(srcDir_+path_);
             }
-
         }
     }
 }
@@ -210,12 +223,11 @@ void WebDisk::ParseFromData() {
         if (partStart == std::string::npos) break;
         // 3. 跳过边界标记本身
         partStart += boundary.size();
-        if (body.substr(partStart, 2) == "--") { // 处理结束边界
+        if (body.substr(partStart, 2) == "--"){ // 处理结束边界
             break;
         }
         // 4. 解析分片头部（改进换行符处理）
         partStart += 2; // 跳过\r\n
-
 
         size_t headerStart=partStart;
         size_t headerEnd = body.find("\r\n\r\n", partStart);
@@ -258,6 +270,7 @@ void WebDisk::ParseFromData() {
         }
         start = contentEnd;
     }
+    // std::cout<<"123"<<std::endl;
 }
 void WebDisk::ParseFromDownloadPath(){
     // GET /download?file={filename}
@@ -337,6 +350,8 @@ int WebDisk::ConverHex(char ch){
 
 void WebDisk::Login(){
     if(request_->method()=="POST"){
+        // 先清理可能存在的旧会话
+        
         // RAII管理MySQL连接
         MYSQL* sql = nullptr;
         SqlConnRAII sql_guard(&sql, SqlConnPool::Instance());
@@ -349,17 +364,23 @@ void WebDisk::Login(){
         if (mysql_query(sql, query)) return ;
         MYSQL_RES* res = mysql_store_result(sql);
         if (!res) return ;
+        
         bool loginSucc = false;
         if (MYSQL_ROW row = mysql_fetch_row(res)) {
             loginSucc = (std::string(row[0]) == password_);
         }
         mysql_free_result(res);
+        
         if (loginSucc) {
+            // 生成新的会话令牌
             std::string token = GenerateSessionToken();
-            SessionManager::getInstance().addToken(token,username_);
-            response_->SetHeader("Set-Cookie", "SESSION_TOKEN=" + token + "; HttpOnly");
+            SessionManager::getInstance().addToken(token, username_);
+            
+            response_->SetCode(200);
+            response_->SetHeader("Set-Cookie", "SESSION_TOKEN=" + token + "; Path=/");
+
             response_->SetStaticFile(srcDir_+"/webdisk.html");
-        }else{
+        } else {
             response_->SetDynamicFile("LoginFail");
         }
     }
@@ -384,6 +405,7 @@ void WebDisk::Register(){
         // 创建用户专属目录
         if (success) {
             fs::create_directories(rootDir_ + "/" + username_); // 创建用户目录
+            response_->SetCode(200); // 登录成功
             response_->SetDynamicFile("RegisterSuccess");
         }else{
             response_->SetDynamicFile("RegisterFail");
@@ -480,7 +502,7 @@ void WebDisk::DownloadFile(){
     std::string filePath = GetUserDir() + "/" + SanitizePath(filename);
     response_->SetBigFile(filePath);
     response_->SetCode(200); // 成功时设置200状态码
-    response_->SetDynamicFile(R"({"status": "download_success"})");
+
 }
 void WebDisk::DeleteFile(){
     std::string token = ParseSessionToken();
@@ -495,35 +517,37 @@ void WebDisk::DeleteFile(){
     return ;
 }
 void WebDisk::LogOut() {
-    // 1. 获取会话令牌（从Cookie或Authorization头）
-    std::string token = ParseSessionToken(); // 复用ParseSessionToken()方法[3](@ref)
+    // 1. 获取会话令牌
+    std::string token = ParseSessionToken();
 
-    // 2. 验证会话有效性
-    auto it = SessionManager::getInstance().getSessionValue(token);
-    if (it == std::nullopt) {
-        response_->SetCode(401); // 未登录用户无法登出
-        response_->SetDynamicFile(R"({"error": "Invalid session token"})");
-        return;
+    // 2. 如果有令牌就清理，没有也继续执行
+    if (!token.empty()) {
+        auto it = SessionManager::getInstance().getSessionValue(token);
+        if (it != std::nullopt) {
+            std::string username = *it;
+            
+            // 记录审计日志
+            std::time_t now = std::time(nullptr);
+            std::string log_entry = std::to_string(now) + ", " + username + ", logout\n";
+            
+            std::ofstream audit_log("logs/audit.log", std::ios::app);
+            if (audit_log) {
+                audit_log << log_entry;
+            }
+        }
+        
+        // 清理服务器端会话
+        SessionManager::getInstance().removeToken(token);
     }
-    std::string username = *it; // 保存用户名用于审计
-    // 3. 清理会话数据
-    SessionManager::getInstance().removeToken(token);          // 移除服务器端会话记录
-    username_.clear();               // 清除用户凭证
+    
+    // 3. 清理当前对象状态
+    username_.clear();
     password_.clear();
     userDir_.clear();
-    // 4. 清理客户端会话标识
-    response_->SetHeader("Set-Cookie", "session_token=; Max-Age=0; HttpOnly"); // 使Cookie过期[6](@ref)
-    // 5. 记录审计日志（格式：时间戳, 用户名, 操作类型）
-    std::time_t now = std::time(nullptr);
-    std::string log_entry = std::to_string(now) + ", " + username + ", logout\n";
-    
-    std::ofstream audit_log("logs/audit.log", std::ios::app); // 追加模式
-    if (audit_log) {
-        audit_log << log_entry; // 写入审计日志[1](@ref)
-    }
-    // 6. 返回成功响应
+    // 5. 返回登录页面
     response_->SetCode(200);
-    response_->SetDynamicFile(R"({"status": "logout_success"})");
+    // response_->SetStaticFile(srcDir_+"/login.html");
+    response_->SetDynamicFile("LogOutSuccess");
 }
 
 void WebDisk::UploadChunk() {
@@ -538,7 +562,8 @@ void WebDisk::UploadChunk() {
     std::string fileName = post_["fileName"];
     std::string chunkIndex = post_["chunkIndex"];
     std::string chunkContent = post_["chunk"];
-    
+    LOG_DEBUG("UploadChunk - fileId: [%s], fileName: [%s], chunkIndex: [%s], chunkSize: %zu", 
+              fileId.c_str(), fileName.c_str(), chunkIndex.c_str(), chunkContent.size());    
     if (fileId.empty() || fileName.empty() || chunkIndex.empty()) {
         response_->SetCode(400);
         return;
@@ -666,15 +691,12 @@ std::string WebDisk::GetUserDir() {
 std::string WebDisk::GenerateSessionToken(){
         return std::to_string(time(nullptr)) + "_" + std::to_string(rand());
 }
-
-
 std::string WebDisk::ParseSessionToken() {
     std::string cookie = request_->GetHeader("Cookie");
     size_t start = cookie.find("SESSION_TOKEN=");
     return (start != std::string::npos) ? 
             cookie.substr(start + 14, cookie.find(';', start) - start - 14) : "";
 }
-
 std::string WebDisk::SanitizePath(const std::string& path) {
     std::string clean = path;
     // 移除所有路径遍历尝试

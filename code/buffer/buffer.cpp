@@ -40,9 +40,13 @@ void Buffer::RetrieveUntil(const char* end){
 }
 // 取出所有数据，buffer归零，读写下标归零,在别的函数中会用到
 void Buffer::RetrieveAll(){
-    bzero(&buffer_[0],buffer_.size());
     //归还空间
     readPos_ = writePos_=0;
+    if(buffer_.size() >128*1024) { // 超过初始大小4倍时释放
+        std::vector<char> newBuffer(128*1024);
+        buffer_.swap(newBuffer); // 释放原内存
+    }
+    bzero(&buffer_[0],buffer_.size());
 }
 // 取出剩余可读的str
 std::string Buffer::RetrieveAllToStr(){
@@ -77,14 +81,16 @@ void Buffer::Append(const Buffer& buff){
     Append(buff.Peek(),buff.ReadableBytes());
 }
 ssize_t Buffer::ReadFd(int fd, int* Errno){
-    char buff[65535];//栈上
+    char buff[64*1024];//栈上
+    // std::vector<char> buff(1024*1024); //堆上
     struct iovec iov[2];
     const size_t writeable=WritableBytes();//目前剩余空间
     iov[0].iov_base=BeginPtr_() + writePos_;
     iov[0].iov_len=writeable;
     iov[1].iov_base = buff;
     iov[1].iov_len=sizeof(buff);
-
+    // iov[1].iov_base = &buff[0];
+    // iov[1].iov_len = buff.size();
 //     const int iovcnt=(writeable < sizeof(buff)? 2:1);
 //     ssize_t len=readv(fd,iov,iovcnt);
 //     if(len<0){
@@ -107,6 +113,7 @@ ssize_t Buffer::ReadFd(int fd, int* Errno){
     else {
         writePos_ = buffer_.size();
         Append(buff, len - writeable);
+        // Append(&buff[0], len - writeable);
     }
     return len;
 }

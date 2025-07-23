@@ -161,14 +161,12 @@ void HttpRequest::ParseBody_(Buffer& buff){
 }
 bool HttpRequest::parse(Buffer& buff){
     const char CRLF[]="\r\n";
-    if(buff.WritableBytes() <=0){
+    if(buff.ReadableBytes() <=0){
         return false;
-    } 
+    }
     while(buff.ReadableBytes() && state_!=FINISH){
         const char* lineEnd=std::search(buff.Peek(),buff.BeginWriteConst(),CRLF,CRLF+2);
-        if(lineEnd == buff.BeginWrite())break;//读到了写区，已经读完
         std::string line(buff.Peek(), lineEnd);
-        buff.RetrieveUntil(lineEnd+2);//下一行
         switch(state_){
             case REQUEST_LINE:{
                 if(!ParseRequestLine_(line)){
@@ -181,19 +179,30 @@ bool HttpRequest::parse(Buffer& buff){
                     state_=BODY;
                     if(buff.ReadableBytes() <=2){
                         state_=FINISH;
-                        break;
                     }
-                    ParseBody_(buff);
                 }else{
                     ParseHeader_(line);
                 }   
+                break;
+            }
+            case BODY:{
+                if(buff.ReadableBytes() >0){
+                    ParseBody_(buff);
+                    // 校验 body 长度
+                    std::string content_length = GetHeader("Content-Length");
+                    int len = std::stoi(content_length);
+                    if(body_.size() != len){
+                        return false;
+                    }
+                }
                 break;
             }
             default:{
                 break;
             }
         }
-
+        if(buff.ReadableBytes() ==0) { break; }
+        buff.RetrieveUntil(lineEnd + 2);
     }
     LOG_DEBUG("[%s], [%s], [%s]",method_.c_str(),path_.c_str(),version_.c_str());
     return true;

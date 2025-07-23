@@ -16,7 +16,7 @@ threadpool_(threadpool)
     notify_fd_ = eventfd(0, EFD_NONBLOCK);
     SetFdNonblock(notify_fd_); // 复用已有的SetFdNonblock方法
     // 注册event_fd到epoller_，监听读事件（边缘触发）
-    epoller_->AddFd(notify_fd_, EPOLLIN | EPOLLET);
+    epoller_->AddFd(notify_fd_, EPOLLIN | EPOLLET | EPOLLONESHOT);
 }
 
 SubReactor::~SubReactor(){
@@ -33,19 +33,18 @@ void SubReactor::Stop() {
     if (thread_.joinable()) thread_.join();
 }
 void SubReactor::Loop() {
-    int timeMS =-1;
+    int timeMS = -1;
     while (isRunning_) {
         if(timeoutMS_ > 0){
-            timeMS=timer_->GetNextTick();
+            timeMS = timer_->GetNextTick();
+            // 限制最小超时时间，提高响应性
+            if(timeMS > 1000) timeMS = 1000;
+        } else {
+            timeMS = 100; // 没有定时器时使用100ms超时
         }
-        // if(timeMS<100)timeMS=100;
-        int eventCnt = epoller_->Wait(timeMS);//当接收缓冲区有数据或发送缓冲区有空间时唤醒
-        // if (eventCnt == 0 && batch_count_ > 0) {
-        //     //闲时快处理
-        //     HandleQueueNotification();
-        //     ProcessPendingFds();
-        //     continue;
-        // }
+        
+        int eventCnt = epoller_->Wait(timeMS);
+        
         for (int i = 0; i < eventCnt; ++i) {
             int fd = epoller_->GetEventFd(i);
             uint32_t events = epoller_->GetEvents(i);
@@ -57,7 +56,7 @@ void SubReactor::Loop() {
                 }else if (events & (EPOLLRDHUP | EPOLLERR)) { // 处理eventfd异常
                     close(notify_fd_);
                     notify_fd_ = eventfd(0, EFD_NONBLOCK);
-                    epoller_->AddFd(notify_fd_, EPOLLIN | EPOLLET);
+                    epoller_->ModFd(notify_fd_, EPOLLIN | EPOLLET | EPOLLONESHOT);
                 }
             }
             else{
@@ -93,13 +92,17 @@ void SubReactor::Loop() {
 void SubReactor::HandleQueueNotification() {
     uint64_t value;
     read(notify_fd_, &value, sizeof(value)); // 清空eventfd
+    epoller_->ModFd(notify_fd_, EPOLLIN | EPOLLET | EPOLLONESHOT);
     // 批量转移队列数据（减少CAS次数）
     size_t current_head = head_.load(std::memory_order_relaxed);
+    // std::cout<<"conn_queue_ size:"<<conn_queue_.size()<<std::endl;
     while (current_head != tail_.load(std::memory_order_acquire)) {
         pending_fds_.push_back(conn_queue_[current_head]);
         current_head = (current_head + 1) % queue_capacity_;
     }
+    batch_count_=0;
     head_.store(current_head, std::memory_order_release); // 原子更新头指针
+    
 }
 
 void SubReactor::ProcessPendingFds() {
@@ -114,7 +117,7 @@ void SubReactor::ProcessPendingFds() {
         sockaddr_in addr;
         socklen_t len = sizeof(addr);
         if (getpeername(fd, (sockaddr*)&addr, &len) == 0) {
-            AddClient(fd, EPOLLIN | EPOLLET, addr);
+            AddClient(fd, EPOLLIN | connEvent_ , addr);
         }  // 获取客户端地址
         ++it;
     }
@@ -125,14 +128,15 @@ void SubReactor::AddClient(int fd, uint32_t event,sockaddr_in addr)  {
     if(timeoutMS_ >0){
         timer_->add(fd,timeoutMS_,std::bind(&SubReactor::CloseConn_,this, &users_[fd]));
     }
-    //   int opt = 1;
-    // setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)); // 禁用 Nagle 算法
+      int opt = 1;
+    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)); // 禁用 Nagle 算法
+    
     SetFdNonblock(fd);
     epoller_->AddFd(fd, event); // ET边缘触发模式
     LOG_INFO("Client[%d] in!", users_[fd].GetFd());
 }
 
-bool SubReactor::PushClient(int fd, uint32_t event,sockaddr_in addr){
+bool SubReactor::PushClient(int fd, sockaddr_in addr){
     size_t current_tail = tail_.load(std::memory_order_acquire);
     size_t next_tail = (current_tail + 1) % queue_capacity_;
     // 队列满时直接拒绝（避免阻塞主Reactor）
@@ -145,10 +149,10 @@ bool SubReactor::PushClient(int fd, uint32_t event,sockaddr_in addr){
     // 写入eventfd通知SubReactor
     // 每积累queue_batch_size_个事件再通知
     batch_count_++;
-    // if (batch_count_ >= queue_batch_size_) {
+    if (batch_count_ >= queue_batch_size_) {
         uint64_t value = 1;
         write(notify_fd_, &value, sizeof(value));
-    // }
+    }
     return true;
 }
 
@@ -158,11 +162,32 @@ void SubReactor::OnRead_(HttpConn* client){
     int ret=-1;
     int readErrno=0;
     ret=client->read(&readErrno);
-    if(ret<=0 && readErrno!=EAGAIN){
+    
+    LOG_DEBUG("Client[%d] OnRead: ret=%d, errno=%d", client->GetFd(), ret, readErrno);
+    
+    if(ret > 0){
+        if(client->IsRequestComplete()){
+            OnProcess(client);
+        }else{
+            epoller_->ModFd(client->GetFd(), EPOLLIN | connEvent_);
+        }
+        // OnProcess(client);
+    }
+    else if(ret == 0){
+        LOG_WARN("Client[%d] connection closed during chunk upload", client->GetFd());
         CloseConn_(client);
         return;
     }
-    OnProcess(client);
+    else if(readErrno == EAGAIN){
+        // 正常，等待更多数据
+        epoller_->ModFd(client->GetFd(), EPOLLIN | connEvent_);
+        return;
+    }
+    else{
+        LOG_ERROR("Client[%d] read error: %s", client->GetFd(), strerror(readErrno));
+        CloseConn_(client);
+        return;
+    }
 }
 void SubReactor::OnWrite_(HttpConn* client){
     assert(client);
@@ -196,20 +221,7 @@ void SubReactor::CloseConn_(HttpConn* client){
     LOG_INFO("Client[%d] quit!", client->GetFd());
 
     epoller_->DelFd(client->GetFd());
-    // client->Close();
-    // closePool_->AddTask([client] {
-    //     client->Close(); // 异步执行耗时操作
-    // });
     users_.erase(client->GetFd());
-    if(timeoutMS_>0){
-        timer_->del_fd(client->GetFd());
-    }
-    client->Close();
-    // threadpool_->AddTask([client] {
-    //     client->Close(); // 异步执行耗时操作
-        
-    // });
-
 }
 void SubReactor::OnProcess(HttpConn* client){
     if(client->process()){
@@ -224,7 +236,7 @@ int SubReactor::SetFdNonblock(int fd){
     // 复制一个已经有的描述符（cmd=F_DUPFD或者F_DUPFD_CLOEXEC）
     // 获取/设置文件描述符标志（cmd=F_GETFD或者F_SETFD）
     // 获取/设置文件状态标志（cmd=F_GETFL或者F_SETFL）
-    int old_option=fcntl(fd,F_GETFD);
+    int old_option=fcntl(fd,F_GETFL);
     //F_GETFD\F_SETFD:FD_CLOEXEC
     //F_GETFL:O_RDONLY 、O_WRONLY、O_RDWR
     //F_SETFL:O_APPEND、 O_ASYNC、 O_DIRECT、 O_NOATIME、O_NONBLOCK

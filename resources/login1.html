@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARK-登录</title>
+    <link rel="icon" href="images/favicon.ico">
+    <!-- 引入Bootstrap 5样式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- 本地样式文件 -->
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <!-- Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 错误提示动画 */
+        .alert-fade {
+            animation: fadeInOut 3.5s forwards;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        /* 加载动画 */
+        #loadingIndicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            z-index: 9999;
+        }
+        
+        .progress-bar {
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        /* 登录卡片样式 */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: none;
+        }
+        
+        .form-control {
+            border-left: none;
+            box-shadow: none;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
+    <!-- 顶部加载条 -->
+    <div id="loadingIndicator">
+        <div class="progress-bar bg-primary" style="height: 3px;"></div>
+    </div>
+
+    <!-- 登录提示框（初始隐藏） -->
+    <div id="loginAlert" class="alert alert-dismissible fade position-fixed top-0 start-50 translate-middle-x mt-3" 
+         style="display: none; z-index: 9998; max-width: 90%;" role="alert">
+        <div class="d-flex align-items-center">
+            <i id="alertIcon" class="fas me-2"></i>
+            <strong id="alertMessage"></strong>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <!-- PRE LOADER -->
+    <div class="preloader">
+        <div class="spinner">
+            <span class="spinner-rotate"></span>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="navbar custom-navbar navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                </button>
+                <a href="/" class="navbar-brand">Mark</a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a class="smoothScroll" href="/">首页</a></li>
+                    <li><a class="smoothScroll" href="/picture">图片</a></li>
+                    <li><a class="smoothScroll" href="/video">视频</a></li>
+                    <li><a class="smoothScroll" href="/login">登录</a></li>
+                    <li><a class="smoothScroll" href="/register">注册</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 登录区域 -->
+    <section id="home">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card shadow-lg rounded-3">
+                        <div class="card-body p-4">
+                            <h1 class="text-center mb-4">用户登录</h1>
+                            <form id="loginForm">
+                                <!-- 用户名输入 -->
+                                <div class="mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        <input type="text" name="username" id="username" class="form-control" 
+                                               placeholder="请输入用户名" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- 密码输入 -->
+                                <div class="mb-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                        <input type="password" name="password" id="password" class="form-control" 
+                                               placeholder="请输入密码" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- 提交按钮 -->
+                                <div class="d-grid gap-2 mb-3">
+                                    <button type="submit" class="btn btn-primary btn-lg py-2">
+                                        <span id="submitText">确认登录</span>
+                                        <div id="submitSpinner" class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status"></div>
+                                    </button>
+                                </div>
+                                
+                                <!-- 辅助链接 -->
+                                <div class="text-center mt-4">
+                                    <a href="#" class="text-decoration-none small">忘记密码?</a>
+                                    <span class="mx-2 text-muted">|</span>
+                                    <a href="/register" class="text-decoration-none small">注册新账号</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- JavaScript库 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/smoothscroll.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/magnific-popup-options.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/custom.js"></script>
+    
+    <!-- 登录功能脚本 -->
+    <script>
+        $(document).ready(function() {
+            // 登录表单提交处理
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // 获取用户名和密码
+                const username = $('#username').val().trim();
+                const password = $('#password').val().trim();
+                
+                // 显示加载状态
+                $('#submitSpinner').removeClass('d-none');
+                $('#submitText').text('登录中...');
+                $('#loadingIndicator').show();
+                
+                // 清理所有旧的SESSION_TOKEN cookie
+                clearOldSessionTokens();
+                
+                // 发送AJAX请求
+                $.ajax({
+                    type: 'POST',
+                    url: '/api2/login',
+                    data: {
+                        username: username,
+                        password: password
+                    },
+                    success: function(response, status, xhr) {
+                        // 恢复按钮状态
+                        resetSubmitButton();
+                        
+                        if (response.includes("LoginFail")) {
+                            showLoginAlert("用户名或密码错误", "danger");
+                        } else {
+                            // 登录成功，显示成功提示
+                            showLoginAlert("登录成功，正在跳转...", "success");
+                            
+                            setTimeout(() => {
+                                document.open();
+                                document.write(response);
+                                document.close();
+                            }, 800);
+                        }
+                    },
+                    error: function(xhr) {
+                        resetSubmitButton();     
+                        showLoginAlert("网络连接异常，请检查后重试", "warning");
+                    }
+                });
+            });
+            
+            // 清理旧的SESSION_TOKEN cookies
+            function clearOldSessionTokens() {
+                const cookies = document.cookie.split(';');
+                cookies.forEach(cookie => {
+                    const [name] = cookie.trim().split('=');
+                    if (name === 'SESSION_TOKEN') {
+                        // 清除所有旧的SESSION_TOKEN
+                        document.cookie = `SESSION_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                        console.log('Cleared old SESSION_TOKEN cookie');
+                    }
+                });
+            }
+            
+            // 显示登录提示
+            function showLoginAlert(message, type) {
+                const alert = $('#loginAlert');
+                const alertIcon = $('#alertIcon');
+                const alertMessage = $('#alertMessage');
+                
+                // 设置消息内容和样式
+                alertMessage.text(message);
+                alert.removeClass('alert-success alert-danger alert-warning');
+                
+                // 根据类型设置图标和样式
+                if (type === "success") {
+                    alert.addClass('alert-success');
+                    alertIcon.removeClass().addClass('fas fa-check-circle');
+                } else if (type === "danger") {
+                    alert.addClass('alert-danger');
+                    alertIcon.removeClass().addClass('fas fa-exclamation-circle');
+                } else {
+                    alert.addClass('alert-warning');
+                    alertIcon.removeClass().addClass('fas fa-exclamation-triangle');
+                }
+                
+                // 显示并设置自动消失
+                alert.removeClass('fade').show().addClass('show alert-fade');
+                
+                // 3.5秒后隐藏提示
+                setTimeout(() => {
+                    alert.removeClass('show alert-fade').addClass('fade');
+                }, 3500);
+            }
+            
+            // 恢复按钮状态
+            function resetSubmitButton() {
+                $('#submitSpinner').addClass('d-none');
+                $('#submitText').text('确认登录');
+                $('#loadingIndicator').hide();
+            }
+            
+            // 手动关闭提示
+            $('#loginAlert .btn-close').on('click', function() {
+                $(this).closest('.alert').removeClass('show').addClass('fade');
+            });
+        });
+    </script>
+</body>
+</html>

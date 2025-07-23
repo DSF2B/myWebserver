@@ -391,8 +391,30 @@
     <script>
         // 页面初始化
         document.addEventListener('DOMContentLoaded', async () => {
-            // 从cookie获取用户名
-            const username = document.cookie.match(/USERNAME=([^;]+)/)?.[1] || '用户';
+            console.log('=== WebDisk page initialized ===');
+            console.log('Current cookies:', document.cookie);
+            
+            // 检查会话有效性
+            if (!isValidSession()) {
+                console.log('Invalid session, redirecting to login');
+                window.location.href = '/login.html?from=expired';
+                return;
+            }
+            
+            // 从SESSION_TOKEN获取用户名（通过API调用）
+            let username = '用户';
+            try {
+                // 尝试从后端获取当前用户信息
+                const token = getCookie('SESSION_TOKEN');
+                if (token) {
+                    // 可以通过API获取用户名，或者从token中解析
+                    // 这里先使用默认值，后续可以添加获取用户名的API
+                    username = '用户';
+                }
+            } catch (error) {
+                console.warn('Failed to get username:', error);
+            }
+            
             document.getElementById('usernameDisplay').textContent = `欢迎，${username}`;
             
             // 初始加载文件列表
@@ -402,23 +424,76 @@
             setupEventListeners();
         });
 
+        // 检查会话有效性
+        function isValidSession() {
+            const sessionToken = getCookie('SESSION_TOKEN');
+            
+            console.log('Session check - TOKEN:', sessionToken ? 'EXISTS' : 'MISSING');
+            
+            return sessionToken; // 只检查SESSION_TOKEN即可
+        }
+
+        // 获取Cookie值
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
+            return null;
+        }
+
+        // 清理所有会话数据
+        function clearAllSessionData() {
+            console.log('=== Clearing all session data ===');
+            console.log('Before clearing - cookies:', document.cookie);
+            
+            // 清理localStorage（兼容旧版本）
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.clear();
+            
+            // 清理sessionStorage
+            sessionStorage.clear();
+            
+            // 清理所有相关Cookie
+            const cookiesToClear = ['SESSION_TOKEN', 'USERNAME', 'JSESSIONID'];
+            const paths = ['/', '/api2', '/login'];
+            
+            cookiesToClear.forEach(cookieName => {
+                paths.forEach(path => {
+                    // 多种清理方式确保兼容性
+                    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
+                    document.cookie = `${cookieName}=; max-age=0; path=${path}`;
+                    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${window.location.hostname}`;
+                });
+            });
+            
+            // 额外清理：遍历现有cookie
+            const allCookies = document.cookie.split(';');
+            allCookies.forEach(cookie => {
+                const [name] = cookie.trim().split('=');
+                if (name && (name.includes('TOKEN') || name.includes('SESSION') || name.includes('USERNAME'))) {
+                    paths.forEach(path => {
+                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
+                        document.cookie = `${name}=; max-age=0; path=${path}`;
+                    });
+                }
+            });
+            
+            console.log('After clearing - cookies:', document.cookie);
+        }
+
         // 事件监听器设置
         function setupEventListeners() {
-            // 文件上传触发
             document.getElementById('uploadTrigger').addEventListener('click', () => {
                 document.getElementById('fileInput').click();
             });
             
-            // 文件选择处理
             document.getElementById('fileInput').addEventListener('change', handleFileUpload);
-            
-            // 退出功能
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            
-            // 刷新功能
             document.getElementById('refreshBtn').addEventListener('click', handleRefresh);
         }
-
         // 文件上传处理
         async function handleFileUpload(e) {
             const files = e.target.files;
@@ -468,78 +543,144 @@
                 e.target.value = ''; // 重置input
             }
         }
-        const CHUNK_SIZE = 1024 * 1024; // 1MB per chunk
+        // 分块上传配置
+        const CHUNK_SIZE = 128 * 1024; // 1MB per chunk
 
         function uploadSingleFile(file, progressBar, progressText, currentFile) {
-            return new Promise((resolve, reject) => {
+            return new Promise(async (resolve, reject) => {
                 currentFile.textContent = `上传中: ${file.name}`;
                 
-                const formData = new FormData();
-                formData.append('files', file, file.name);
-                formData.append('file_name', file.name);
-
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/upload', true);
-                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
-                
-                // 上传进度监听
-                xhr.upload.addEventListener('progress', (event) => {
-                    if (event.lengthComputable) {
-                        const percentComplete = Math.round((event.loaded / event.total) * 100);
-                        progressBar.style.width = `${percentComplete}%`;
-                        progressText.textContent = `${percentComplete}%`;
-                    }
-                });
-                
-                // 请求完成处理
-                xhr.onload = () => {
-                    console.log('Upload status:', xhr.status);
-                    console.log('Upload statusText:', xhr.statusText);
-                    console.log('Upload responseText:', xhr.responseText);
+                try {
+                    // 生成文件唯一标识
+                    const fileId = generateFileId();
+                    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
                     
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        console.log('Upload success for:', file.name);
-                        resolve({ success: true, filename: file.name });
-                    } else {
-                        console.log('Upload failed for:', file.name);
-                        reject(new Error(`上传失败: ${xhr.status} ${xhr.statusText}`));
+                    // 分块上传
+                    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                        const start = chunkIndex * CHUNK_SIZE;
+                        const end = Math.min(start + CHUNK_SIZE, file.size);
+                        const chunk = file.slice(start, end);
+                        
+                        await uploadChunk(chunk, chunkIndex, totalChunks, fileId, file.name);
+
+                        // 更新进度
+                        const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `${progress}%`;
                     }
-                };
-
-                xhr.onerror = () => {
-                    console.log('Upload network error for:', file.name);
-                    reject(new Error(`网络错误: ${file.name}`));
-                };
-
-                xhr.ontimeout = () => {
-                    console.log('Upload timeout for:', file.name);
-                    reject(new Error(`上传超时: ${file.name}`));
-                };
-                
-                // 设置超时时间（可选）
-                xhr.timeout = 30000; // 30秒超时
-                
-                xhr.send(formData);
+                    
+                    // 所有分块上传完成，通知服务器合并
+                    await mergeChunks(fileId, file.name);
+                    
+                    resolve({ success: true, filename: file.name });
+                    
+                } catch (error) {
+                    reject(error);
+                }
             });
         }
-        
-        // 退出处理
+
+        function uploadChunk(chunk, chunkIndex, totalChunks, fileId, fileName) {
+            return new Promise((resolve, reject) => {
+                let retryCount = 0;
+                const maxRetries = 10;
+                
+                function attemptUpload() {
+                    const formData = new FormData();
+                    formData.append('chunkIndex', chunkIndex.toString());
+                    formData.append('totalChunks', totalChunks.toString());
+                    formData.append('fileId', fileId);
+                    formData.append('fileName', fileName);
+                    formData.append('chunk', chunk, fileName);
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/api2/upload_chunk', true);
+                    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
+                    
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve();
+                        } else {
+                            handleFailure(`HTTP ${xhr.status}`);
+                        }
+                    };
+                    
+                    xhr.onerror = () => handleFailure('网络错误');
+                    xhr.ontimeout = () => handleFailure('上传超时');
+                    xhr.timeout = 3000000;
+                    
+                    function handleFailure(errorMsg) {
+                        if (retryCount < maxRetries) {
+                            retryCount++;
+                            console.warn(`分块 ${chunkIndex} 第${retryCount}次重试: ${errorMsg}`);
+                            setTimeout(attemptUpload, 1000 * retryCount); // 递增延迟
+                        } else {
+                            reject(new Error(`分块${chunkIndex}上传失败: ${errorMsg}`));
+                        }
+                    }
+                    
+                    xhr.send(formData);
+                }
+                
+                attemptUpload(); // 开始首次尝试
+            });
+        }
+
+        function mergeChunks(fileId, fileName) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api2/merge_chunks', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve();
+                    } else {
+                        reject(new Error(`文件合并失败: ${xhr.status}`));
+                    }
+                };
+                xhr.onerror = () => reject(new Error('网络错误'));
+                xhr.send(JSON.stringify({
+                    fileId: fileId,
+                    fileName: fileName
+                }));
+            });
+        }
+
+        function generateFileId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        // 修复后的退出处理
         async function handleLogout() {
+            console.log('=== Starting logout process ===');
+            
             try {
-                const response = await fetch('/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                // 使用jQuery AJAX方式，与login.html保持一致
+                $.ajax({
+                    type: 'POST',
+                    url: '/api2/logout',
+                    success: function(response) {
+                        console.log('Server logout successful');
+                    },
+                    error: function(xhr) {
+                        console.warn('Server logout failed, but continuing with client cleanup');
+                    },
+                    complete: function() {
+                        // 无论服务器响应如何，都清理客户端数据
+                        clearAllSessionData();
+                        
+                        // 跳转到登录页
+                        setTimeout(() => {
+                            window.location.href = '/login.html?from=logout';
+                        }, 100);
                     }
                 });
                 
-                if (response.ok) {
-                    localStorage.removeItem('token');
-                    window.location.href = '/login.html';
-                }
             } catch (error) {
-                console.error('退出失败:', error);
-                alert('退出失败，请重试');
+                console.error('Logout request failed:', error);
+                // 即使请求失败，也要清理客户端数据
+                clearAllSessionData();
+                window.location.href = '/login.html?from=logout';
             }
         }
         
@@ -563,24 +704,47 @@
             }
         }
         
+        // 修复后的文件获取 - 使用jQuery AJAX
         async function fetchFiles() {
             const container = document.getElementById('fileListContainer');
-            container.innerHTML = `<div class="loading">加载中...</div>`;
+            container.innerHTML = `<div class="loading"><div class="loading-spinner"></div><span>正在加载文件列表...</span></div>`;
 
-            const controller = new AbortController();
-            setTimeout(() => controller.abort(), 10000);
-
-            // 直接发起请求并处理响应
-            const response = await fetch('/api/files', {
-                headers: { 
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` 
-                },
-                signal: controller.signal
-            });
-
-            // 关键修改：跳过状态码检查，直接解析JSON（无论状态码是什么）
-            const files = await response.json();
-            renderFileTable(files); // 渲染数据到页面
+            try {
+                $.ajax({
+                    type: 'GET',
+                    url: '/api2/files',
+                    timeout: 10000,
+                    success: function(files) {
+                        console.log('Files loaded successfully');
+                        renderFileTable(files);
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to fetch files, status:', xhr.status);
+                        
+                        if (xhr.status === 401) {
+                            console.log('Session expired, redirecting to login');
+                            window.location.href = '/login.html?from=expired';
+                            return;
+                        }
+                        
+                        container.innerHTML = `
+                            <div class="error-message">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                加载文件列表失败，请刷新重试
+                            </div>
+                        `;
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Fetch files error:', error);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        加载文件列表失败，请刷新重试
+                    </div>
+                `;
+            }
         }
 
 
@@ -675,18 +839,20 @@
         }
         // 下载文件
         function downloadFile(filename) {
-            fetch(`/download?file=${encodeURIComponent(filename)}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
+            fetch(`/api2/download?file=${encodeURIComponent(filename)}`)
             .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/login.html?from=expired';
+                    return;
+                }
                 if (!response.ok) {
                     throw new Error(`下载失败: ${response.status}`);
                 }
                 return response.blob();
             })
             .then(blob => {
+                if (!blob) return;
+                
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -705,28 +871,22 @@
 
         // 删除文件
         async function deleteFile(filename) {
-            try {
-                const response = await fetch(`/delete?file=${encodeURIComponent(filename)}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'DELETE',
+                    url: `/api2/delete?file=${encodeURIComponent(filename)}`,
+                    success: function(data) {
+                        resolve(data || { success: true });
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            window.location.href = '/login.html?from=expired';
+                            return;
+                        }
+                        reject(new Error(`删除失败: ${xhr.status}`));
                     }
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`删除失败: ${response.status}`);
-                }
-                
-                // 检查响应是否有内容再解析JSON
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                }
-                return { success: true }; // 默认成功响应
-            } catch (error) {
-                console.error('删除失败:', error);
-                throw error;
-            }
+            });
         }
         
         // 文件类型图标映射

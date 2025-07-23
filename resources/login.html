@@ -182,6 +182,10 @@
     <!-- 登录功能脚本 -->
     <script>
         $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromParam = urlParams.get('from');
+            
+           
             // 登录表单提交处理
             $('#loginForm').on('submit', function(e) {
                 e.preventDefault();
@@ -195,31 +199,53 @@
                 $('#submitText').text('登录中...');
                 $('#loadingIndicator').show();
                 
-                // 发送AJAX请求（使用application/x-www-form-urlencoded格式）
+                // 清理所有旧的SESSION_TOKEN cookie
+                clearOldSessionTokens();
+                
+                // 发送AJAX请求
                 $.ajax({
                     type: 'POST',
-                    url: '/login',
+                    url: '/api2/login',
                     data: {
                         username: username,
                         password: password
                     },
                     success: function(response, status, xhr) {
-                        // 检查是否包含"loginError"（服务器返回的错误标识）
+                        // 恢复按钮状态
+                        resetSubmitButton();
+                        
                         if (response.includes("LoginFail")) {
                             showLoginAlert("用户名或密码错误", "danger");
-                        }else{
-                            document.open();
-                            document.write(response); // 关键：将HTML写入文档
-                            document.close();
+                        } else {
+                            // 登录成功，显示成功提示
+                            showLoginAlert("登录成功，正在跳转...", "success");
+                            
+                            setTimeout(() => {
+                                document.open();
+                                document.write(response);
+                                document.close();
+                            }, 800);
                         }
                     },
                     error: function(xhr) {
-                        // 恢复按钮状态
                         resetSubmitButton();     
                         showLoginAlert("网络连接异常，请检查后重试", "warning");
                     }
                 });
             });
+            
+            // 清理旧的SESSION_TOKEN cookies
+            function clearOldSessionTokens() {
+                const cookies = document.cookie.split(';');
+                cookies.forEach(cookie => {
+                    const [name] = cookie.trim().split('=');
+                    if (name === 'SESSION_TOKEN') {
+                        // 清除所有旧的SESSION_TOKEN
+                        document.cookie = `SESSION_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                        console.log('Cleared old SESSION_TOKEN cookie');
+                    }
+                });
+            }
             
             // 显示登录提示
             function showLoginAlert(message, type) {
@@ -232,7 +258,10 @@
                 alert.removeClass('alert-success alert-danger alert-warning');
                 
                 // 根据类型设置图标和样式
-                if (type === "danger") {
+                if (type === "success") {
+                    alert.addClass('alert-success');
+                    alertIcon.removeClass().addClass('fas fa-check-circle');
+                } else if (type === "danger") {
                     alert.addClass('alert-danger');
                     alertIcon.removeClass().addClass('fas fa-exclamation-circle');
                 } else {
