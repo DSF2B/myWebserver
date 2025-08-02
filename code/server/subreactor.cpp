@@ -221,7 +221,8 @@ void SubReactor::CloseConn_(HttpConn* client){
     LOG_INFO("Client[%d] quit!", client->GetFd());
 
     epoller_->DelFd(client->GetFd());
-    users_.erase(client->GetFd());
+    // users_.erase(client->GetFd());
+    client->Close();
 }
 void SubReactor::OnProcess(HttpConn* client){
     if(client->process()){

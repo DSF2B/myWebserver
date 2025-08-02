@@ -128,6 +128,7 @@ ssize_t HttpConn::write(int* saveErrno){
         }while((isET || totalToSent > 10240));
     }
     if(totalToSent>0) *saveErrno = EAGAIN;
+    response_->CloseFd();
     return (totalToSent > 0) ? -1 : 0;
 }
 bool HttpConn::process(){
@@ -153,13 +154,15 @@ bool HttpConn::process(){
     iov_[0].iov_base=const_cast<char*>(writeBuff_.Peek());
     iov_[0].iov_len=writeBuff_.ReadableBytes();
     iovCnt_=1;
-
     if(response_->sendFileType() == SendFileType::DynamicWebPage){
         iov_[1].iov_base=&response_->body()[0];
         iov_[1].iov_len=response_->body().size();
         iovCnt_=2;
-    }
-    else{
+    }else if(response_->sendFileType() == SendFileType::StaticWebPage){
+        iov_[1].iov_base = response_->mmFile();
+        iov_[1].iov_len = response_->FileLen();
+        iovCnt_ = 2;
+    }else{
         iov_[1].iov_base=nullptr;
         iov_[1].iov_len=0;
     }
@@ -171,6 +174,7 @@ bool HttpConn::process(){
     //     iovCnt_=2;
     // }
     LOG_DEBUG("filesize:%d, %d  to %d", response_->FileLen() , iovCnt_, ToWriteBytes());
+
     return true;
 }
 

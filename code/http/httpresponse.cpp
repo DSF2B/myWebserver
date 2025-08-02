@@ -38,13 +38,13 @@ HttpResponse::HttpResponse(){
     code_=-1;
     isKeepAlive_=false;
     path_="";
-    // mmFile_=nullptr;
+    mmFile_=nullptr;
     fileFd_=-1;
     mmFileStat_={0};
     userFileSize_=0;
 }
 HttpResponse::~HttpResponse(){
-    // UnmapFile();
+    UnmapFile();
     if (fileFd_ != -1) {
         close(fileFd_); // 析构时关闭文件
     }
@@ -53,10 +53,10 @@ HttpResponse::~HttpResponse(){
 void HttpResponse::Init(bool isKeepAlive, int code){
     isKeepAlive_=isKeepAlive;
     code_=code;
-    // if(mmFile_){
-    //     UnmapFile();
-    // }
-    // mmFile_=nullptr;
+    if(mmFile_){
+        UnmapFile();
+    }
+    mmFile_=nullptr;
     if (fileFd_ != -1) {
         close(fileFd_); // 析构时关闭文件
     }
@@ -78,20 +78,20 @@ void HttpResponse::MakeResponse(Buffer& buff){
     AddHeader_(buff);
     AddContent_(buff);
 }
-// void HttpResponse::UnmapFile(){
-//     if(mmFile_){
-//         munmap(mmFile_,mmFileStat_.st_size);
-//         mmFile_=nullptr;
-//     }
-// }
+void HttpResponse::UnmapFile(){
+    if(mmFile_){
+        munmap(mmFile_,mmFileStat_.st_size);
+        mmFile_=nullptr;
+    }
+}
 void HttpResponse::CloseFd(){
     if(fileFd_!=-1){
         close(fileFd_);
     }
 }
-// char* HttpResponse::File(){
-//     return mmFile_;
-// }
+char* HttpResponse::mmFile(){
+    return mmFile_;
+}
 int HttpResponse::File(){
     return fileFd_;
 }
@@ -243,6 +243,7 @@ void HttpResponse::AddContent_(Buffer& buff) {
     }
     else if (path_ != "" && sendFileType_==SendFileType::StaticWebPage) {
         // 静态文件：检查并打开文件
+        
         fileFd_=open((path_).data(),O_RDONLY);
         if(fileFd_<0){
             LOG_ERROR("Failed to open static file: %s", path_.c_str());
@@ -250,6 +251,21 @@ void HttpResponse::AddContent_(Buffer& buff) {
             return;
         }
         LOG_DEBUG("Static file opened: %s", path_.c_str());
+        if(fstat(fileFd_, &mmFileStat_) < 0) {
+            LOG_ERROR("fstat failed for file: %s", path_.c_str());
+            close(fileFd_);
+            fileFd_ = -1;
+            code_ = 404;
+            return;
+        }        
+        void* mmRet = mmap(0, mmFileStat_.st_size, PROT_READ, MAP_PRIVATE, fileFd_, 0);
+        // if(*mmRet == -1) {
+        //     ErrorContent(buff, "File NotFound!");
+        //     return;
+        // }
+        mmFile_ = (char*)mmRet;
+        CloseFd();
+        fileFd_=-1;
     }
     else if (userFilePath_!="" && sendFileType_==SendFileType::UserData) {
         // 用户文件：SetBigFile已检查过，直接打开

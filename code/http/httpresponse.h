@@ -20,9 +20,9 @@ public:
 
     void Init(bool isKeepAlive = false, int code = -1);
     void MakeResponse(Buffer& buff);
-    // void UnmapFile();
+    void UnmapFile();
     void CloseFd();
-    // char* File();
+    char* mmFile();
     int File();
     size_t FileLen() const;
     void ErrorContent(Buffer& buff, std::string message);
@@ -55,7 +55,7 @@ private:
 
     std::unordered_map<std::string, std::string> headers_;
 
-    // char* mmFile_; 
+    char* mmFile_; 
     int fileFd_;
     
     struct stat mmFileStat_;
