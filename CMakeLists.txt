@@ -61,15 +61,15 @@ target_link_libraries(
 #     webserver_core.a
 # )
 
-add_executable(testLog ${PROJECT_SOURCE_DIR}/test/test.cpp)
-target_link_directories(
-    testLog PUBLIC
-    ${PROJECT_SOURCE_DIR}/lib
-)
-target_link_libraries(
-    testLog
-    webserver_core.so
-)
+# add_executable(testLog ${PROJECT_SOURCE_DIR}/test/test.cpp)
+# target_link_directories(
+#     testLog PUBLIC
+#     ${PROJECT_SOURCE_DIR}/lib
+# )
+# target_link_libraries(
+#     testLog
+#     webserver_core.so
+# )
 # target_link_libraries(
 #     testLog
 #     webserver_core.a

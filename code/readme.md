@@ -78,6 +78,18 @@ TaskQueue* TaskQueue::taskQ_= new TaskQueue//类外定义并初始化静态成�
     int m = vsnprintf(buff_.BeginWrite(), buff_.WritableBytes(), format, vaList);
     va_end(vaList);
 
+**日志使用双缓冲区**
+写时首先判断日期，如果不是今天，或日志行数超了，创建新的日志文件，并将缓冲区中的日志内容写入新文件。
+
+然后创建栈上空间，将日志内容写入栈上空间，这样就无需加锁。然后加锁，把栈上空间的内容append到缓冲区中。如果buff满了，就把当前buff放到buffers数组中，然后把nextBuffer move到当前buff，如果nextBuffer为空，就创建一个新的nextBuffer。
+
+如果不是异步，直接加锁，fputs放入文件。
+
+异步线程死循环running,首先从buffers数组中取buff,如果buffers为空就等待3s。然后把currentBuffer_放到buffers_，把buffers_和buffersToWrite交换，同时用newBuffer1和newBuffer2补充currentBuffer_和nextBuffer_。
+
+接着从buffersToWrite逐个取出buff,fwrite写入fp。然后从buffersToWrite中取出末尾buff补充newBuffer1和newBuffer2。
+
+如果日志停止，running_=false,把currentBuffer_和buffers_内容写入fd结束。
 # ConnPool
 连接池采用生产者消费者模型，采用锁+信号量，预先产生多条连接std::queue<MYSQL *>。
 

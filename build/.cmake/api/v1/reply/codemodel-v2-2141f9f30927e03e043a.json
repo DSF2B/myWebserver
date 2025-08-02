@@ -16,8 +16,7 @@
 					"targetIndexes" : 
 					[
 						0,
-						1,
-						2
+						1
 					]
 				}
 			],
@@ -33,8 +32,7 @@
 					"targetIndexes" : 
 					[
 						0,
-						1,
-						2
+						1
 					]
 				}
 			],
@@ -45,13 +43,6 @@
 					"id" : "myWebserver::@6890427a1f51a3e7e1df",
 					"jsonFile" : "target-myWebserver-Debug-3697f34778735e4ae39d.json",
 					"name" : "myWebserver",
-					"projectIndex" : 0
-				},
-				{
-					"directoryIndex" : 0,
-					"id" : "testLog::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-testLog-Debug-bdc3821a59d91283a086.json",
-					"name" : "testLog",
 					"projectIndex" : 0
 				},
 				{

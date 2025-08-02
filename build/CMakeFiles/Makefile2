@@ -65,7 +65,6 @@ CMAKE_BINARY_DIR = /home/zilu/桌面/myWebserver/build
 # The main recursive "all" target.
 all: CMakeFiles/webserver_core.dir/all
 all: CMakeFiles/myWebserver.dir/all
-all: CMakeFiles/testLog.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -75,7 +74,6 @@ preinstall:
 # The main recursive "clean" target.
 clean: CMakeFiles/webserver_core.dir/clean
 clean: CMakeFiles/myWebserver.dir/clean
-clean: CMakeFiles/testLog.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -85,7 +83,7 @@ clean: CMakeFiles/testLog.dir/clean
 CMakeFiles/webserver_core.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=5,6,7,8,9,10,11,12,13,14,15,16,17 "Built target webserver_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=3,4,5,6,7,8,9,10,11,12,13,14,15 "Built target webserver_core"
 .PHONY : CMakeFiles/webserver_core.dir/all
 
 # Build rule for subdir invocation for target.
@@ -129,32 +127,6 @@ myWebserver: CMakeFiles/myWebserver.dir/rule
 CMakeFiles/myWebserver.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/myWebserver.dir/build.make CMakeFiles/myWebserver.dir/clean
 .PHONY : CMakeFiles/myWebserver.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/testLog.dir
-
-# All Build rule for target.
-CMakeFiles/testLog.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zilu/桌面/myWebserver/build/CMakeFiles --progress-num=3,4 "Built target testLog"
-.PHONY : CMakeFiles/testLog.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/testLog.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zilu/桌面/myWebserver/build/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/testLog.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zilu/桌面/myWebserver/build/CMakeFiles 0
-.PHONY : CMakeFiles/testLog.dir/rule
-
-# Convenience name for target.
-testLog: CMakeFiles/testLog.dir/rule
-.PHONY : testLog
-
-# clean rule for target.
-CMakeFiles/testLog.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/clean
-.PHONY : CMakeFiles/testLog.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

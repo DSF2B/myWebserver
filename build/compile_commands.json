@@ -63,10 +63,5 @@
   "directory": "/home/zilu/桌面/myWebserver/build",
   "command": "/usr/bin/g++  -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -o CMakeFiles/myWebserver.dir/code/main.cpp.o -c /home/zilu/桌面/myWebserver/code/main.cpp",
   "file": "/home/zilu/桌面/myWebserver/code/main.cpp"
-},
-{
-  "directory": "/home/zilu/桌面/myWebserver/build",
-  "command": "/usr/bin/g++  -I/home/zilu/桌面/myWebserver/code/buffer -I/home/zilu/桌面/myWebserver/code/http -I/home/zilu/桌面/myWebserver/code/log -I/home/zilu/桌面/myWebserver/code/pool -I/home/zilu/桌面/myWebserver/code/server -I/home/zilu/桌面/myWebserver/code/timer -g -o CMakeFiles/testLog.dir/test/test.cpp.o -c /home/zilu/桌面/myWebserver/test/test.cpp",
-  "file": "/home/zilu/桌面/myWebserver/test/test.cpp"
 }
 ]

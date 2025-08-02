@@ -142,19 +142,6 @@ myWebserver/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/myWebserver.dir/build.make CMakeFiles/myWebserver.dir/build
 .PHONY : myWebserver/fast
 
-#=============================================================================
-# Target rules for targets named testLog
-
-# Build rule for target.
-testLog: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 testLog
-.PHONY : testLog
-
-# fast build rule for target.
-testLog/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/build
-.PHONY : testLog/fast
-
 code/buffer/buffer.o: code/buffer/buffer.cpp.o
 .PHONY : code/buffer/buffer.o
 
@@ -446,30 +433,6 @@ code/timer/heaptimer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserver_core.dir/build.make CMakeFiles/webserver_core.dir/code/timer/heaptimer.cpp.s
 .PHONY : code/timer/heaptimer.cpp.s
 
-test/test.o: test/test.cpp.o
-.PHONY : test/test.o
-
-# target to build an object file
-test/test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/test/test.cpp.o
-.PHONY : test/test.cpp.o
-
-test/test.i: test/test.cpp.i
-.PHONY : test/test.i
-
-# target to preprocess a source file
-test/test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/test/test.cpp.i
-.PHONY : test/test.cpp.i
-
-test/test.s: test/test.cpp.s
-.PHONY : test/test.s
-
-# target to generate assembly for a file
-test/test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/testLog.dir/build.make CMakeFiles/testLog.dir/test/test.cpp.s
-.PHONY : test/test.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -479,7 +442,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... myWebserver"
-	@echo "... testLog"
 	@echo "... webserver_core"
 	@echo "... code/buffer/buffer.o"
 	@echo "... code/buffer/buffer.i"
@@ -517,9 +479,6 @@ help:
 	@echo "... code/timer/heaptimer.o"
 	@echo "... code/timer/heaptimer.i"
 	@echo "... code/timer/heaptimer.s"
-	@echo "... test/test.o"
-	@echo "... test/test.i"
-	@echo "... test/test.s"
 .PHONY : help
 
 
